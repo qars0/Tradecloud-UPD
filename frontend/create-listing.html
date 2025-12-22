@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать объявление - TradeCloud</title>
+    <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/components/header.css">
+    <link rel="stylesheet" href="src/css/pages/create-listing.css">
+</head>
+<body>
+
+    <div id="header-container"></div>
+
+    <div class="create-container">
+        <form class="form-card" id="create-form">
+            
+            <div class="form-header">
+                <h1>Новое объявление</h1>
+                <p>Заполните детали, чтобы найти покупателя быстрее</p>
+            </div>
+
+<!-- Секция 1: Описание (Здесь меняем только блок с типами) -->
+            <div class="form-section">
+                <div class="section-title"><i class='bx bx-edit'></i> Основная информация</div>
+                
+                <div class="input-group">
+                    <label>Название</label>
+                    <input type="text" class="custom-input" name="title" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Категория</label>
+                    <select class="custom-select" name="category_id" id="category-select" required>
+                        <option value="" disabled selected>Выберите категорию</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Тип сделки</label>
+                    <!-- Добавили onchange для вызова функции -->
+                    <div class="type-selector" id="type-selector">
+                        <label class="type-option">
+                            <input type="radio" name="type" value="sell" checked onchange="togglePriceFields()">
+                            <div class="type-card">
+                                <i class='bx bx-purchase-tag'></i><span>Продажа</span>
+                            </div>
+                        </label>
+                        <label class="type-option">
+                            <input type="radio" name="type" value="service" onchange="togglePriceFields()">
+                            <div class="type-card">
+                                <i class='bx bx-wrench'></i><span>Услуга</span>
+                            </div>
+                        </label>
+                        <label class="type-option">
+                            <input type="radio" name="type" value="rent" onchange="togglePriceFields()">
+                            <div class="type-card">
+                                <i class='bx bx-time'></i><span>Аренда</span>
+                            </div>
+                        </label>
+                        <label class="type-option">
+                            <input type="radio" name="type" value="auction" onchange="togglePriceFields()">
+                            <div class="type-card">
+                                <i class='bx bx-stopwatch'></i><span>Аукцион</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Секция 2: Детали Цены (Динамическая) -->
+            <div class="form-section">
+                <div class="section-title"><i class='bx bx-ruble'></i> Стоимость и Условия</div>
+                
+                <!-- Блок для Продажи / Услуги / Аренды -->
+                <div id="standard-price-block">
+                    <div class="input-group">
+                        <label>Цена (₽)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" class="custom-input" name="price" id="main-price" placeholder="0">
+                            
+                            <!-- Чекбокс "От" -->
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; margin: 0;">
+                                <input type="checkbox" name="is_price_from" value="true" style="width: 18px; height: 18px;">
+                                <span>От</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Выбор единицы измерения (скрыт для продажи) -->
+                    <div class="input-group" id="unit-selector" style="display: none;">
+                        <label>Единица измерения</label>
+                        <select class="custom-select" name="price_unit">
+                            <option value="piece">за шт.</option>
+                            <option value="hour">за час</option>
+                            <option value="day">за сутки</option>
+                            <option value="service">за услугу</option>
+                            <option value="sqm">за м²</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Блок для Аукциона (Скрыт по умолчанию) -->
+                <div id="auction-block" style="display: none;">
+                    <div class="input-group">
+                        <label>Начальная ставка (₽)</label>
+                        <input type="number" class="custom-input" name="auction_start_price" placeholder="Например: 100">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Шаг аукциона (₽)</label>
+                        <input type="number" class="custom-input" name="auction_step" placeholder="Минимальное повышение, например: 50">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Дата окончания торгов</label>
+                        <input type="datetime-local" class="custom-input" name="auction_end_date">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Описание</label>
+                    <textarea class="custom-textarea" name="description" required></textarea>
+                </div>
+            </div>
+
+            <!-- Секция 3: Фотографии -->
+            <div class="form-section">
+                <div class="section-title"><i class='bx bx-images'></i> Фотографии (до 5 шт.)</div>
+                
+                <div class="upload-zone" id="drop-zone">
+                    <input type="file" id="file-input" multiple accept="image/*" hidden>
+                    <i class='bx bx-cloud-upload upload-icon'></i>
+                    <div class="upload-text">Нажмите или перетащите фото сюда</div>
+                    <div class="upload-hint">Поддерживаются JPG, PNG</div>
+                </div>
+
+                <div class="preview-container" id="preview-container">
+                    <!-- Сюда попадут превьюшки -->
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Опубликовать объявление</button>
+            <p id="msg-box" style="text-align: center; margin-top: 15px;"></p>
+        </form>
+    </div>
+
+    <script src="src/js/components/header.js"></script>
+    <script src="src/js/pages/create-listing.js"></script>
+</body>
+</html>

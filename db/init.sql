@@ -48,6 +48,25 @@ CREATE TABLE listings (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE listings ADD COLUMN type VARCHAR(50) DEFAULT 'sell'; 
+-- Возможные значения: 'sell' (Продажа), 'rent' (Аренда), 'service' (Услуга)
+-- 1. Добавляем новые колонки в listings
+ALTER TABLE listings 
+ADD COLUMN price_unit VARCHAR(20) DEFAULT NULL, -- 'hour', 'day', 'piece', 'service'
+ADD COLUMN is_price_from BOOLEAN DEFAULT FALSE, -- Галочка "Цена от"
+ADD COLUMN auction_start_price DECIMAL(10, 2),  -- Начальная цена аукциона
+ADD COLUMN auction_step DECIMAL(10, 2),         -- Шаг ставки
+ADD COLUMN auction_end_date TIMESTAMP;          -- Дата окончания
+
+-- 2. Таблица для ставок аукциона
+CREATE TABLE bids (
+    id SERIAL PRIMARY KEY,
+    listing_id INTEGER REFERENCES listings(id) ON DELETE CASCADE,
+    bidder_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 4. Изображения объявлений
 CREATE TABLE listing_images (
     id SERIAL PRIMARY KEY,
