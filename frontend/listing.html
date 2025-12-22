@@ -70,13 +70,28 @@
                     </div>
                 </div>
 
-                <!-- Кнопки действий (для обычных товаров) -->
+                <!-- Кнопки действий -->
                 <div id="standard-actions">
-                    <button class="btn-create" style="width: 100%; justify-content: center; margin-bottom: 10px;">
+                    <!-- ДОБАВИЛИ id="btn-show-phone" -->
+                    <button id="btn-show-phone" class="btn-create" style="width: 100%; justify-content: center; margin-bottom: 10px;">
                         Показать телефон
                     </button>
+                    
                     <button class="btn-catalog" style="width: 100%; justify-content: center; background: white; border: 1px solid var(--primary-color); color: var(--primary-color);">
                         <i class='bx bx-message-rounded-dots'></i> Написать сообщение
+                    </button>
+                </div>
+
+                <!-- ПАНЕЛЬ ВЛАДЕЛЬЦА (Скрыта по умолчанию) -->
+                <div id="owner-controls" style="display: none; border-top: 1px solid #eee; margin-top: 20px; padding-top: 15px;">
+                    <p style="font-size: 14px; color: #777; margin-bottom: 10px;">Управление объявлением:</p>
+                    
+                    <button id="btn-mark-sold" class="btn-create" style="width: 100%; margin-bottom: 10px; background: #6C757D;">
+                        Снять с продажи (Продано)
+                    </button>
+                    
+                    <button id="btn-delete" class="btn-create" style="width: 100%; background: var(--danger-color);">
+                        <i class='bx bx-trash'></i> Удалить
                     </button>
                 </div>
 

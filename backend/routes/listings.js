@@ -19,4 +19,10 @@ router.post('/', upload.array('images', 5), listingController.createListing);
 // 5. Динамический маршрут с ID
 router.get('/:id', listingController.getListingById);
 
+router.get('/:id', listingController.getListingById); // Получить
+
+router.delete('/:id', listingController.deleteListing); // Удалить (DELETE)
+
+router.put('/:id/status', listingController.updateStatus); // Обновить статус (PUT)
+
 module.exports = router;

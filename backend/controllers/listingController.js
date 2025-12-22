@@ -170,7 +170,7 @@ exports.getListingById = async (req, res) => {
         const query = `
             SELECT 
                 l.*, 
-                u.username, u.full_name, u.avatar_url as author_avatar, u.rating as author_rating, u.created_at as author_joined,
+                u.username, u.full_name, u.phone, u.avatar_url as author_avatar, u.rating as author_rating, u.created_at as author_joined,
                 (SELECT MAX(amount) FROM bids WHERE listing_id = l.id) as current_max_bid,
                 (SELECT COUNT(*) FROM bids WHERE listing_id = l.id) as bid_count,
                 (CASE WHEN f.user_id IS NOT NULL THEN TRUE ELSE FALSE END) as is_favorite
@@ -266,5 +266,58 @@ exports.placeBid = async (req, res) => {
         res.status(400).json({ message: err.message || 'Ошибка ставки' });
     } finally {
         client.release();
+    }
+};
+
+// Удалить объявление
+exports.deleteListing = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ message: 'Нет авторизации' });
+    
+    const listingId = req.params.id;
+    const userId = req.session.user.id;
+
+    try {
+        // Проверяем владельца
+        const check = await pool.query('SELECT user_id FROM listings WHERE id = $1', [listingId]);
+        if (check.rows.length === 0) return res.status(404).json({ message: 'Не найдено' });
+        
+        if (check.rows[0].user_id !== userId) {
+            return res.status(403).json({ message: 'Это не ваше объявление' });
+        }
+
+        // Удаляем (Postgres CASCADE удалит картинки, ставки и чаты сам)
+        await pool.query('DELETE FROM listings WHERE id = $1', [listingId]);
+        
+        // В идеале надо еще удалить файлы картинок с диска (fs.unlink), 
+        // но для учебного проекта можно пропустить.
+
+        res.json({ message: 'Объявление удалено' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+};
+
+// Изменить статус (например, на 'sold')
+exports.updateStatus = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ message: 'Нет авторизации' });
+
+    const listingId = req.params.id;
+    const { status } = req.body; // 'active', 'sold', 'reserved'
+    const userId = req.session.user.id;
+
+    try {
+        const check = await pool.query('SELECT user_id FROM listings WHERE id = $1', [listingId]);
+        if (check.rows.length === 0) return res.status(404).json({ message: 'Не найдено' });
+        
+        if (check.rows[0].user_id !== userId) {
+            return res.status(403).json({ message: 'Нет прав' });
+        }
+
+        await pool.query('UPDATE listings SET status = $1 WHERE id = $2', [status, listingId]);
+        res.json({ message: 'Статус обновлен' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка сервера' });
     }
 };
