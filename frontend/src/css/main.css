@@ -1,0 +1,43 @@
+:root {
+    /* Цветовая палитра */
+    --primary-color: #3A86FF;
+    --secondary-color: #F8F9FA;
+    --accent-color: #FF9500;
+    --danger-color: #FF3B30;
+    --gray-dark: #6C757D;
+    --gray-medium: #D9D9D9;
+    --gray-light: #F8F9FA;
+    --text-dark: #1A1A1A;
+    --text-light: #6C757D;
+    --white: #FFFFFF;
+    --black: #000000;
+    
+    /* Тени */
+    --shadow-light: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    --shadow-medium: 0px 0px 10px 5px rgba(0, 0, 0, 0.25);
+    
+    /* Скругления */
+    --border-radius-small: 10px;
+    --border-radius-medium: 15px;
+    --border-radius-large: 20px;
+    --border-radius-xlarge: 25px;
+    --border-radius-xxlarge: 30px;
+    --border-radius-circle: 1000px;
+    --border-radius-pill: 20px;
+    
+    /* Шрифты */
+    --font-family: 'Yandex Sans Text', sans-serif;
+}
+
+/* Базовый сброс */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--secondary-color);
+    color: var(--text-dark);
+}

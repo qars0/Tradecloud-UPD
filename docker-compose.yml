@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  postgres:
+    build: ./db
+    container_name: tradecloud_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432" # Внешний порт 5435, чтобы не конфликтовал, если у тебя стоит локальный Postgres
+    networks:
+      - tradecloud-network
+
+  backend:
+    build: ./backend
+    container_name: tradecloud_backend
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      PORT: 3000
+      DB_USER: ${POSTGRES_USER}
+      DB_HOST: ${POSTGRES_HOST}
+      DB_NAME: ${POSTGRES_DB}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_PORT: ${POSTGRES_PORT}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - tradecloud-network
+
+  frontend:
+    build: ./frontend
+    container_name: tradecloud_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    networks:
+      - tradecloud-network
+
+volumes:
+  postgres_data:
+
+networks:
+  tradecloud-network:
+    driver: bridge
