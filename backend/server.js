@@ -47,10 +47,12 @@ app.use(session({
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const listingRoutes = require('./routes/listings');
+const favoriteRoutes = require('./routes/favorites');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/listings', listingRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 // Test Route
 app.get('/api/health', async (req, res) => {
