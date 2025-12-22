@@ -13,15 +13,18 @@ function renderCard(item) {
     if (item.type === 'service') badgeHtml = '<span class="card__badge badge--service">Услуга</span>';
     else if (item.type === 'rent') badgeHtml = '<span class="card__badge badge--rent">Аренда</span>';
     else if (item.type === 'auction') badgeHtml = '<span class="card__badge badge--top">Аукцион</span>';
-    else if (item.status === 'sold') badgeHtml = '<span class="card__badge" style="background:gray">Продано</span>';
+    else if (item.type === 'sell') badgeHtml = '<span class="card__badge" style="background-color: #3A86FF;">Товар</span>'; // Синяя плашка
     
+
+    if (item.status === 'sold') badgeHtml = '<span class="card__badge" style="background:gray">Продано</span>';
+
     // 3. Логика отображения цены
     let priceDisplay = '';
     
     if (item.type === 'auction') {
         // Для аукциона показываем текущую ставку или начальную цену
         // (Предполагаем, что в item.price лежит актуальная цена)
-        priceDisplay = `<span style="color:var(--danger-color);"><i class='bx bx-gavel'></i> ${Math.floor(item.price)} ₽</span>`;
+        priceDisplay = `<span style="color:var(--danger-color);"><i class='bx bx-stopwatch'></i> ${Math.floor(item.price)} ₽</span>`;
     } else {
         // Форматирование числа (1000 -> 1 000)
         const value = Math.floor(item.price).toLocaleString('ru-RU');
@@ -46,7 +49,7 @@ function renderCard(item) {
 
     // 4. Дата и Автор
     const date = new Date(item.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-    const author = item.username || 'Продавец'; // Убедись, что SQL запрос возвращает username
+    const author = item.full_name || item.username || 'Продавец';
 
     return `
         <div class="card" onclick="location.href='/listing.html?id=${item.id}'">

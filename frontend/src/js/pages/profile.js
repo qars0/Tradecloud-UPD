@@ -18,7 +18,7 @@ async function loadProfileData() {
         const user = await res.json();
 
         // Заполняем карточку
-        document.getElementById('profile-name').innerText = user.username;
+        document.getElementById('profile-name').innerText = user.full_name || user.username;
         document.getElementById('profile-rating').innerText = user.rating || '5.0';
         
         if (user.avatar_url) {
@@ -31,6 +31,7 @@ async function loadProfileData() {
         document.getElementById('join-date').innerText = date.toLocaleDateString('ru-RU', options);
 
         // Заполняем форму настроек
+        document.getElementById('input-fullname').value = user.full_name || '';
         document.getElementById('input-username').value = user.username;
         document.getElementById('input-email').value = user.email;
         document.getElementById('input-phone').value = user.phone || '';

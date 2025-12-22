@@ -13,8 +13,8 @@ const pool = new Pool({
 });
 
 exports.register = async (req, res) => {
-    // Добавили phone в деструктуризацию
-    const { username, email, password, phone } = req.body;
+    // Добавили full_name
+    const { username, full_name, email, password, phone } = req.body;
 
     try {
         // 1. Проверка существования пользователя
@@ -24,19 +24,21 @@ exports.register = async (req, res) => {
         );
 
         if (userCheck.rows.length > 0) {
-            return res.status(400).json({ message: 'Пользователь с таким email или логином уже существует' });
+            return res.status(400).json({ message: 'Пользователь уже существует' });
         }
 
         // 2. Хэширование пароля
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        // 3. Создание пользователя (Добавили phone в INSERT)
+        // Вставляем full_name
         const newUser = await pool.query(
-            'INSERT INTO users (username, email, password_hash, phone) VALUES ($1, $2, $3, $4) RETURNING id, username, email, avatar_url, phone',
-            [username, email, passwordHash, phone]
+            `INSERT INTO users (username, full_name, email, password_hash, phone) 
+             VALUES ($1, $2, $3, $4, $5) 
+             RETURNING id, username, full_name, email, avatar_url, phone`,
+            [username, full_name, email, passwordHash, phone]
         );
-
+        
         // 4. Автоматический вход
         req.session.user = newUser.rows[0];
         
@@ -47,7 +49,7 @@ exports.register = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Ошибка сервера при регистрации' });
+        res.status(500).json({ message: 'Ошибка сервера' });
     }
 };
 

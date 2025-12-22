@@ -96,7 +96,8 @@ exports.getListings = async (req, res) => {
         let query = `
             SELECT 
                 l.*, 
-                u.username, 
+                u.username,
+                u.full_name,
                 u.avatar_url as author_avatar,
                 img.image_url
             FROM listings l
@@ -140,6 +141,7 @@ exports.getListings = async (req, res) => {
             created_at: row.created_at,
             user_id: row.user_id,
             username: row.username,
+            full_name: row.full_name,
             price_unit: row.price_unit,
             is_price_from: row.is_price_from,
             // Фронтенд ждет массив images

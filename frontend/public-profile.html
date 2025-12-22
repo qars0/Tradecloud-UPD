@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль пользователя - TradeCloud</title>
+    <!-- Шрифты и иконки -->
     <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <!-- Стили -->
     <link rel="stylesheet" href="src/css/main.css">
     <link rel="stylesheet" href="src/css/components/header.css">
-    <link rel="stylesheet" href="src/css/components/cards.css">
-    <!-- Используем тот же CSS профиля -->
-    <link rel="stylesheet" href="src/css/pages/profile.css">
+    <link rel="stylesheet" href="src/css/components/cards.css"> <!-- Стили карточек -->
+    <link rel="stylesheet" href="src/css/pages/profile.css">   <!-- Стили профиля -->
 </head>
 <body>
 
@@ -18,14 +20,13 @@
 
     <main class="main-container">
         
-        <!-- Карточка -->
+        <!-- Левая колонка: Карточка профиля -->
         <aside class="profile-card">
             <div class="avatar-wrapper" style="border: none;">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" class="profile-avatar-large" id="profile-avatar-img">
-                <!-- Кнопки редактирования удалены -->
             </div>
 
-            <h1 class="profile-name" id="profile-name">...</h1>
+            <h1 class="profile-name" id="profile-name">Загрузка...</h1>
             
             <div class="profile-status">
                 <span id="status-indicator" style="width: 8px; height: 8px; background: #ccc; border-radius: 50%; display: inline-block;"></span>
@@ -39,7 +40,7 @@
 
             <div class="profile-stats">
                 <div class="stat-item">
-                    <div class="stat-value">0</div>
+                    <div class="stat-value" id="stat-count">0</div>
                     <div class="stat-label">Товаров</div>
                 </div>
                 <div class="stat-item">
@@ -58,9 +59,10 @@
             </button>
         </aside>
 
-        <!-- Контент -->
+        <!-- Правая колонка: Контент -->
         <section class="content-area">
             
+            <!-- Табы -->
             <div class="tabs-header">
                 <button class="tab-btn active" data-tab="listings">
                     <i class='bx bx-grid-alt'></i> Объявления пользователя
@@ -68,18 +70,19 @@
                 <button class="tab-btn" data-tab="reviews">
                     <i class='bx bx-comment-detail'></i> Отзывы
                 </button>
-                <!-- Настройки удалены -->
             </div>
 
+            <!-- Вкладка 1: Объявления -->
             <div class="tab-content active" id="tab-listings">
+                <!-- Сюда JS вставит карточки -->
                 <div id="listings-container" class="listings-grid">
-                    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-light);">
-                        <i class='bx bx-package' style="font-size: 48px;"></i>
-                        <p>Нет активных объявлений</p>
+                    <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                        Загрузка объявлений...
                     </div>
                 </div>
             </div>
 
+            <!-- Вкладка 2: Отзывы -->
             <div class="tab-content" id="tab-reviews">
                 <div id="reviews-container">
                     <div style="padding: 20px; text-align: center; color: var(--text-light);">

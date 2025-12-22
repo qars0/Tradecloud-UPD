@@ -1,25 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Получаем ID из URL: public-profile.html?id=123
+    // 1. Получаем ID из URL (например: public-profile.html?id=1)
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('id');
 
     if (!userId) {
-        alert('Пользователь не указан');
-        window.location.href = '/';
+        document.querySelector('.main-container').innerHTML = 
+            '<h1 style="text-align:center; margin-top:50px;">Пользователь не указан</h1>';
         return;
     }
 
+    // 2. Запускаем загрузку данных
     loadPublicProfile(userId);
+    loadUserListings(userId);
     setupTabs();
     
     // Логика кнопки "Написать"
     document.getElementById('write-msg-btn').addEventListener('click', () => {
-        // Проверка авторизации
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
         if (!isLoggedIn) {
             window.location.href = '/login.html';
         } else {
-            // Переход в чат с этим юзером (функционал чатов будем делать позже)
             alert('Переход в чат с пользователем ID: ' + userId);
             // window.location.href = `/chat.html?with=${userId}`;
         }
@@ -37,20 +37,26 @@ async function loadPublicProfile(id) {
 
         const user = await res.json();
 
-        // Заполняем данные
-        document.getElementById('profile-name').innerText = user.username;
+        // ОБНОВЛЕНИЕ: Показываем Имя Фамилию, если есть, иначе логин
+        document.getElementById('profile-name').innerText = user.full_name || user.username;
+        
         document.getElementById('profile-rating').innerText = user.rating || '0.0';
         
         if (user.avatar_url) {
             document.getElementById('profile-avatar-img').src = user.avatar_url;
         }
 
-        // Дата
+        // Статус (можно доработать логику онлайн/оффлайн позже)
+        // Пока просто ставим серый
+        const statusText = document.getElementById('status-text');
+        const statusIndicator = document.getElementById('status-indicator');
+        // if (user.is_online) ... (это на будущее)
+
+        // Дата регистрации
         const date = new Date(user.created_at);
         document.getElementById('join-date').innerText = date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 
-        // Если это мой собственный профиль -> редирект на "Мой профиль"
-        // (Опционально, но удобно)
+        // Проверка "Это я?"
         checkIfMe(user.id);
 
     } catch (err) {
@@ -82,49 +88,49 @@ function checkIfMe(profileId) {
     // if(me && me.id === profileId) window.location.href = '/profile.html';
 }
 
-// Загрузка объявлений этого пользователя (НОВАЯ ФУНКЦИЯ)
+// --- Загрузка объявлений пользователя ---
 async function loadUserListings(userId) {
     const container = document.getElementById('listings-container');
-    container.innerHTML = '<div style="width:100%; text-align:center">Загрузка объявлений...</div>';
-
+    
     try {
-        // Запрашиваем объявления конкретного пользователя
+        // Запрос к API
         const res = await fetch(`/api/listings?user_id=${userId}`);
         const listings = await res.json();
 
-        container.innerHTML = ''; // Очищаем "Загрузку"
+        container.innerHTML = ''; // Очищаем "Загрузка..."
 
-        // Если пусто
         if (listings.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <i class='bx bx-ghost'></i>
-                    <h3>Здесь пусто</h3>
-                    <p>Пользователь пока ничего не продает</p>
+                    <i class='bx bx-package'></i>
+                    <h3>Нет активных объявлений</h3>
+                    <p>У пользователя пока нет товаров на продажу</p>
                 </div>
             `;
             updateStats(0);
             return;
         }
 
-        // Обновляем цифру "Товаров" в шапке
+        // Обновляем счетчик
         updateStats(listings.length);
 
-        // Рисуем карточки
+        // Рендерим карточки
         listings.forEach(item => {
-            // renderCard - это функция из card-renderer.js
-            container.innerHTML += renderCard(item);
+            // Функция renderCard берется из card-renderer.js
+            if (typeof renderCard === 'function') {
+                container.innerHTML += renderCard(item);
+            } else {
+                console.error('renderCard is not defined. Проверьте подключение скрипта.');
+            }
         });
 
     } catch (err) {
         console.error(err);
-        container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+        container.innerHTML = '<div class="empty-state">Ошибка загрузки объявлений</div>';
     }
 }
 
 function updateStats(count) {
-    // Ищем элемент "Товаров" в шапке профиля. 
-    // В HTML это первый .stat-value
-    const stats = document.querySelectorAll('.stat-value');
-    if(stats[0]) stats[0].innerText = count;
+    const statCount = document.getElementById('stat-count');
+    if(statCount) statCount.innerText = count;
 }

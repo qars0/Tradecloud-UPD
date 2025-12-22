@@ -41,9 +41,8 @@ exports.updateProfile = async (req, res) => {
     if (!req.session.user) return res.status(401).json({ message: 'Не авторизован' });
 
     const userId = req.session.user.id;
-    const { username, phone, email } = req.body;
-    
-    // Если есть файл, берем путь, иначе null
+    // Добавили full_name в деструктуризацию
+    const { username, full_name, phone, email } = req.body; 
     const avatarUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
@@ -53,13 +52,14 @@ exports.updateProfile = async (req, res) => {
         let count = 1;
 
         if (username) { query += `username = $${count++}, `; values.push(username); }
+        if (full_name) { query += `full_name = $${count++}, `; values.push(full_name); } // <--- Добавили
         if (phone) { query += `phone = $${count++}, `; values.push(phone); }
         if (email) { query += `email = $${count++}, `; values.push(email); }
         if (avatarUrl) { query += `avatar_url = $${count++}, `; values.push(avatarUrl); }
 
-        // Убираем последнюю запятую
         query = query.slice(0, -2);
-        query += ` WHERE id = $${count} RETURNING id, username, email, phone, avatar_url, rating`;
+        // Важно: возвращаем full_name
+        query += ` WHERE id = $${count} RETURNING id, username, full_name, email, phone, avatar_url, rating`;
         values.push(userId);
 
         const result = await pool.query(query, values);
@@ -74,13 +74,18 @@ exports.updateProfile = async (req, res) => {
     }
 };
 
+// В getMe и getUserById (если нужно) тоже убедись, что возвращается full_name в SELECT запросе.
+// Обычно SELECT * или перечисление полей.
+// getUserById пример: SELECT id, username, full_name, avatar_url...
+
 // Получить публичный профиль другого пользователя
 exports.getUserById = async (req, res) => {
     const userId = req.params.id;
 
     try {
+        // Добавили full_name в SELECT
         const query = `
-            SELECT id, username, avatar_url, rating, created_at 
+            SELECT id, username, full_name, avatar_url, rating, created_at 
             FROM users 
             WHERE id = $1
         `;
