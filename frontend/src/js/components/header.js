@@ -1,14 +1,10 @@
-/**
- * Компонент хедера
- * Рендерит хедер в элемент с id="header-container"
- */
+/* src/js/components/header.js */
 class HeaderComponent {
     constructor() {
         this.container = document.getElementById('header-container');
-        // Временная заглушка авторизации (позже заменим на реальную проверку API)
         this.isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
         this.user = JSON.parse(localStorage.getItem('user')) || {
-            name: 'Студент',
+            name: 'User',
             avatar: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
         };
     }
@@ -16,15 +12,13 @@ class HeaderComponent {
     render() {
         if (!this.container) return;
 
-        // Левая часть
         const leftSection = `
-            <a href="/" class="header__logo">
+            <a href="/index.html" class="header__logo">
                 <i class='bx bx-cloud-alt'></i>
                 <span class="header__logo-text">TradeCloud</span>
             </a>
         `;
 
-        // Центральная часть
         const centerSection = `
             <div class="header__center">
                 <button class="btn-catalog" onclick="location.href='/catalog.html'">
@@ -40,7 +34,6 @@ class HeaderComponent {
             </div>
         `;
 
-        // Правая часть (Динамическая)
         let rightSection = '';
 
         if (this.isLoggedIn) {
@@ -54,7 +47,7 @@ class HeaderComponent {
                         <span class="badge">2</span>
                     </a>
                     <a href="/create-listing.html" class="btn-create">
-                        Разместить объявление
+                        Разместить
                     </a>
                     
                     <div class="profile-dropdown">
@@ -66,9 +59,6 @@ class HeaderComponent {
                             <a href="/profile.html?tab=listings" class="dropdown-item">
                                 <i class='bx bx-list-ul'></i> Мои объявления
                             </a>
-                            <a href="/profile.html?tab=orders" class="dropdown-item">
-                                <i class='bx bx-package'></i> Заказы
-                            </a>
                             <div class="dropdown-divider"></div>
                             <a href="#" class="dropdown-item" id="logout-btn" style="color: var(--danger-color);">
                                 <i class='bx bx-log-out'></i> Выход
@@ -78,21 +68,21 @@ class HeaderComponent {
                 </div>
             `;
         } else {
+            // ОБРАТИ ВНИМАНИЕ НА ССЫЛКИ ЗДЕСЬ
             rightSection = `
                 <div class="header__right">
                     <div class="header__auth-links">
                         <a href="/login.html" class="auth-link">Вход</a>
                         <span style="color: var(--gray-medium)">|</span>
-                        <a href="/register.html" class="auth-link primary">Регистрация</a>
+                        <a href="/login.html?mode=register" class="auth-link primary">Регистрация</a>
                     </div>
                     <a href="/login.html" class="btn-create" style="background: var(--gray-dark);">
-                        Разместить объявление
+                        Разместить
                     </a>
                 </div>
             `;
         }
 
-        // Сборка
         this.container.innerHTML = `
             <header class="header">
                 <div class="header__content">
@@ -107,19 +97,22 @@ class HeaderComponent {
     }
 
     attachEvents() {
-        // Логика кнопки выхода
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                localStorage.setItem('isLoggedIn', 'false');
-                location.reload(); // Перезагружаем страницу, чтобы обновить хедер
+                // Выход через API
+                fetch('/api/auth/logout', { method: 'POST' })
+                    .then(() => {
+                        localStorage.setItem('isLoggedIn', 'false');
+                        localStorage.removeItem('user');
+                        window.location.href = '/login.html';
+                    });
             });
         }
     }
 }
 
-// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     const header = new HeaderComponent();
     header.render();

@@ -5,11 +5,10 @@ const pgSession = require('connect-pg-simple')(session); // Для хранен�
 const { Pool } = require('pg');
 require('dotenv').config();
 
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Database Connection (Pure SQL)
+// DB Setup
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -23,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-
+// Session Config (ВАЖНО)
 app.use(session({
     store: new pgSession({
         pool: pool,                // Используем наш пул подключений
@@ -37,6 +36,10 @@ app.use(session({
         httpOnly: true
     }
 }));
+
+// Routes
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
 
 // Test Route
 app.get('/api/health', async (req, res) => {
@@ -56,7 +59,3 @@ app.get('/api/health', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-
-// Routes
-const authRoutes = require('./routes/auth');
-app.use('/api/auth', authRoutes);
