@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Components Demo</title>
+    <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="src/css/main.css">
+    <!-- Подключаем новый файл стилей -->
+    <link rel="stylesheet" href="src/css/components/cards.css">
+    
+    <style>
+        body { padding: 40px; background: #F8F9FA; }
+        h2 { margin: 30px 0 20px; color: #333; }
+        .grid-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        .cat-grid-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Компоненты TradeCloud</h1>
+
+    <!-- 1. КАРТОЧКИ КАТЕГОРИЙ -->
+    <h2>1. Категории (Картинка + Текст)</h2>
+    <div class="cat-grid-demo">
+        
+        <!-- Категория 1 -->
+        <a href="#" class="category-tile">
+            <img src="https://images.unsplash.com/photo-1498049860654-af1a5c5668ba?auto=format&fit=crop&w=400&q=80" class="category-tile__img" alt="Электроника">
+            <div class="category-tile__overlay"></div>
+            <span class="category-tile__title">Электроника</span>
+        </a>
+
+        <!-- Категория 2 -->
+        <a href="#" class="category-tile">
+            <img src="https://images.unsplash.com/photo-1542060748-10c287230d5f?auto=format&fit=crop&w=400&q=80" class="category-tile__img" alt="Дом">
+            <div class="category-tile__overlay"></div>
+            <span class="category-tile__title">Дом и сад</span>
+        </a>
+
+        <!-- Категория 3 -->
+        <a href="#" class="category-tile">
+            <img src="https://images.unsplash.com/photo-1550259979-ed79b48d2a30?auto=format&fit=crop&w=400&q=80" class="category-tile__img" alt="Спорт">
+            <div class="category-tile__overlay"></div>
+            <span class="category-tile__title">Спорт и отдых</span>
+        </a>
+
+        <!-- Категория 4 -->
+        <a href="#" class="category-tile">
+            <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=400&q=80" class="category-tile__img" alt="Услуги">
+            <div class="category-tile__overlay"></div>
+            <span class="category-tile__title">Услуги</span>
+        </a>
+
+    </div>
+
+    <!-- 2. КАРТОЧКИ ТОВАРОВ -->
+    <h2>2. Объявления (Типы, Цены, Лайки)</h2>
+    <div class="grid-demo">
+        
+        <!-- Карточка 1: Услуга -->
+        <div class="card">
+            <div class="card__image-holder">
+                <span class="card__badge badge--service">Услуга</span>
+                <button class="card__favorite" onclick="toggleHeart(this)"><i class='bx bx-heart'></i></button>
+                <img src="https://images.unsplash.com/photo-1581092921461-eab62e97a782?auto=format&fit=crop&w=500&q=80" class="card__image" alt="Ремонт">
+            </div>
+            <div class="card__content">
+                <div class="card__price">от 500 ₽</div>
+                <div class="card__title">Ремонт ноутбуков и ПК любой сложности. Выезд на дом</div>
+                <div class="card__meta">
+                    <span>Москва</span>
+                    <span>Сегодня</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Карточка 2: Аренда -->
+        <div class="card">
+            <div class="card__image-holder">
+                <span class="card__badge badge--rent">Аренда</span>
+                <button class="card__favorite active" onclick="toggleHeart(this)"><i class='bx bxs-heart'></i></button>
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80" class="card__image" alt="Наушники">
+            </div>
+            <div class="card__content">
+                <div class="card__price">2 000 ₽ / сут</div>
+                <div class="card__title">Наушники JBL профессиональные для мероприятий</div>
+                <div class="card__meta">
+                    <span>Спб</span>
+                    <span>Вчера</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Карточка 3: Б/У Товар -->
+        <div class="card">
+            <div class="card__image-holder">
+                <span class="card__badge badge--used">Б/У</span>
+                <button class="card__favorite" onclick="toggleHeart(this)"><i class='bx bx-heart'></i></button>
+                <img src="https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?auto=format&fit=crop&w=500&q=80" class="card__image" alt="Ноутбук">
+            </div>
+            <div class="card__content">
+                <div class="card__price">45 000 ₽</div>
+                <div class="card__title">MacBook Air 13 M1, отличное состояние, полный комплект</div>
+                <div class="card__meta">
+                    <span>Казань</span>
+                    <span>2 часа назад</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Карточка 4: В топе -->
+        <div class="card">
+            <div class="card__image-holder">
+                <span class="card__badge badge--top">В ТОПЕ</span>
+                <button class="card__favorite" onclick="toggleHeart(this)"><i class='bx bx-heart'></i></button>
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80" class="card__image" alt="Часы">
+            </div>
+            <div class="card__content">
+                <div class="card__price">12 990 ₽</div>
+                <div class="card__title">Смарт часы Apple Watch Series 3</div>
+                <div class="card__meta">
+                    <span>Москва</span>
+                    <span>Сейчас</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleHeart(btn) {
+            btn.classList.toggle('active');
+            const icon = btn.querySelector('i');
+            if (btn.classList.contains('active')) {
+                icon.classList.remove('bx-heart');
+                icon.classList.add('bxs-heart');
+            } else {
+                icon.classList.remove('bxs-heart');
+                icon.classList.add('bx-heart');
+            }
+        }
+    </script>
+</body>
+</html>
