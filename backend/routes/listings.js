@@ -3,6 +3,9 @@ const router = express.Router();
 const listingController = require('../controllers/listingController');
 const upload = require('../middleware/upload');
 
+// Получить список (ставим ДО '/:id', чтобы не конфликтовало)
+router.get('/', listingController.getListings); 
+
 // Получить категории
 router.get('/categories', listingController.getCategories);
 

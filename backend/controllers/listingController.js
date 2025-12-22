@@ -84,3 +84,72 @@ exports.createListing = async (req, res) => {
         client.release();
     }
 };
+
+
+// Получить список объявлений (с фильтрами)
+exports.getListings = async (req, res) => {
+    try {
+        const { user_id, limit, sort } = req.query;
+
+        // Базовый запрос:
+        // Мы берем данные объявления + имя автора + ГЛАВНУЮ картинку
+        let query = `
+            SELECT 
+                l.*, 
+                u.username, 
+                u.avatar_url as author_avatar,
+                img.image_url
+            FROM listings l
+            JOIN users u ON l.user_id = u.id
+            LEFT JOIN listing_images img ON l.id = img.listing_id AND img.is_main = TRUE
+        `;
+
+        const values = [];
+        const conditions = [];
+
+        // Фильтр по пользователю (для профиля)
+        if (user_id) {
+            conditions.push(`l.user_id = $${conditions.length + 1}`);
+            values.push(user_id);
+        }
+
+        // Добавляем WHERE, если есть условия
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        // Сортировка (по умолчанию новые сверху)
+        query += ' ORDER BY l.created_at DESC';
+
+        // Лимит (например, для главной страницы показать только 8 штук)
+        if (limit) {
+            conditions.push(`LIMIT $${conditions.length + 1}`); // Это псевдо-код, limit пишется в конце
+            // Для простоты вставим число напрямую, если оно валидно, или используем параметр
+            query += ` LIMIT ${parseInt(limit) || 20}`;
+        }
+
+        const result = await pool.query(query, values);
+
+        // Форматируем ответ (собираем images в массив, чтобы фронтенд понимал формат)
+        const listings = result.rows.map(row => ({
+            id: row.id,
+            title: row.title,
+            price: row.price, // Для аукциона тут будет стартовая цена
+            type: row.type,
+            status: row.status,
+            created_at: row.created_at,
+            user_id: row.user_id,
+            username: row.username,
+            price_unit: row.price_unit,
+            is_price_from: row.is_price_from,
+            // Фронтенд ждет массив images
+            images: row.image_url ? [{ image_url: row.image_url }] : [] 
+        }));
+
+        res.json(listings);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка получения списка' });
+    }
+};

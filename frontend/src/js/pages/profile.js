@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     setupAvatarUpload();
     setupSettingsForm();
+    loadMyListings();
 });
 
 // 1. Загрузка данных пользователя
@@ -137,4 +138,57 @@ function setupSettingsForm() {
             msg.innerText = '❌ Ошибка сети';
         }
     });
+}
+
+// 5. Загрузка и рендеринг моих объявлений
+async function loadMyListings() {
+    const container = document.getElementById('listings-container');
+    container.innerHTML = '<div style="text-align:center; width:100%">Загрузка...</div>';
+
+    try {
+        // 1. Получаем ID текущего юзера (мы уже получали его в loadProfileData, 
+        // но для надежности можно взять из /api/user/me снова или сохранить в переменную)
+        const userRes = await fetch('/api/user/me');
+        const user = await userRes.json();
+        
+        // 2. Запрашиваем объявления этого юзера
+        const res = await fetch(`/api/listings?user_id=${user.id}`);
+        const listings = await res.json();
+
+        container.innerHTML = ''; // Очистить лоадер
+
+        if (listings.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class='bx bx-ghost'></i>
+                    <h3>Здесь пока пусто</h3>
+                    <p>Вы еще ничего не выставили на продажу</p>
+                    <a href="/create-listing.html" class="btn-create" style="display:inline-block; margin-top:10px">Создать объявление</a>
+                </div>
+            `;
+            // Обновим счетчик товаров в шапке профиля
+            updateStats(0);
+            return;
+        }
+
+        // Обновим счетчик товаров
+        updateStats(listings.length);
+
+        // 3. Рендерим карточки
+        listings.forEach(item => {
+            // renderCard берется из card-renderer.js
+            container.innerHTML += renderCard(item);
+        });
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = 'Ошибка загрузки объявлений';
+    }
+}
+
+function updateStats(count) {
+    // Ищем элемент "Товаров" в шапке профиля. 
+    // В HTML это первый .stat-value
+    const stats = document.querySelectorAll('.stat-value');
+    if(stats[0]) stats[0].innerText = count;
 }

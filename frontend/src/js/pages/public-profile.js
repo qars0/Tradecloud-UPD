@@ -81,3 +81,50 @@ function checkIfMe(profileId) {
     // const me = JSON.parse(myData);
     // if(me && me.id === profileId) window.location.href = '/profile.html';
 }
+
+// Загрузка объявлений этого пользователя (НОВАЯ ФУНКЦИЯ)
+async function loadUserListings(userId) {
+    const container = document.getElementById('listings-container');
+    container.innerHTML = '<div style="width:100%; text-align:center">Загрузка объявлений...</div>';
+
+    try {
+        // Запрашиваем объявления конкретного пользователя
+        const res = await fetch(`/api/listings?user_id=${userId}`);
+        const listings = await res.json();
+
+        container.innerHTML = ''; // Очищаем "Загрузку"
+
+        // Если пусто
+        if (listings.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class='bx bx-ghost'></i>
+                    <h3>Здесь пусто</h3>
+                    <p>Пользователь пока ничего не продает</p>
+                </div>
+            `;
+            updateStats(0);
+            return;
+        }
+
+        // Обновляем цифру "Товаров" в шапке
+        updateStats(listings.length);
+
+        // Рисуем карточки
+        listings.forEach(item => {
+            // renderCard - это функция из card-renderer.js
+            container.innerHTML += renderCard(item);
+        });
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+    }
+}
+
+function updateStats(count) {
+    // Ищем элемент "Товаров" в шапке профиля. 
+    // В HTML это первый .stat-value
+    const stats = document.querySelectorAll('.stat-value');
+    if(stats[0]) stats[0].innerText = count;
+}

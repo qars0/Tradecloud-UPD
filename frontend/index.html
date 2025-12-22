@@ -3,52 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud - Главная</title>
-    
+    <title>TradeCloud - Студенческий Маркетплейс</title>
     <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
-    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
-    <link href='https://cdn.boxicons.com/3.0.6/fonts/brands/boxicons-brands.min.css' rel='stylesheet'>
-    
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="src/css/main.css">
     <link rel="stylesheet" href="src/css/components/header.css">
+    <link rel="stylesheet" href="src/css/components/cards.css"> <!-- Стили карточек -->
 </head>
 <body>
 
-    <!-- Сюда JS вставит хедер -->
     <div id="header-container"></div>
 
-    <main style="padding: 40px 20px; max-width: var(--container-width); margin: 0 auto;">
+    <main style="max-width: 1200px; margin: 0 auto; padding: 30px 20px;">
         
-        <div style="text-align: center; margin-top: 50px;">
-            <h1 style="font-size: 36px; margin-bottom: 20px;">Добро пожаловать в TradeCloud</h1>
-            <p style="color: var(--text-light); font-size: 18px;">
-                Безопасная площадка для студентов
+        <!-- Герой-блок (Приветствие) -->
+        <section style="text-align: center; margin-bottom: 60px; padding: 60px 20px; background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%); border-radius: 30px;">
+            <h1 style="font-size: 3rem; margin-bottom: 15px; color: var(--text-dark);">
+                Покупай и продавай <span style="color: var(--primary-color);">легко</span>
+            </h1>
+            <p style="font-size: 1.2rem; color: var(--text-light); margin-bottom: 30px;">
+                Безопасная площадка для студентов твоего вуза
             </p>
-            
-            <!-- Блок проверки -->
-            <div style="margin-top: 40px; padding: 20px; background: white; border-radius: 20px; display: inline-block; box-shadow: var(--shadow-light);">
-                <h3>Статус системы:</h3>
-                <div id="status" style="margin-top: 10px;">Загрузка...</div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <a href="/create-listing.html" class="btn-create" style="padding: 15px 30px; font-size: 18px;">
+                    <i class='bx bx-plus'></i> Разместить объявление
+                </a>
+                <a href="/catalog.html" class="btn-catalog" style="padding: 15px 30px; font-size: 18px; background: white; color: var(--text-dark); border: 1px solid #ddd;">
+                    Смотреть каталог
+                </a>
             </div>
-        </div>
+        </section>
+
+        <!-- Свежие объявления -->
+        <section>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+                <h2 style="font-size: 24px;">🔥 Свежие предложения</h2>
+                <a href="/catalog.html" style="text-decoration: none; color: var(--primary-color); font-weight: 500;">
+                    Смотреть все <i class='bx bx-right-arrow-alt'></i>
+                </a>
+            </div>
+
+            <!-- Сюда JS загрузит карточки -->
+            <div id="fresh-listings" class="listings-grid">
+                <!-- Лоадер -->
+                <div class="empty-state">Загрузка...</div>
+            </div>
+        </section>
 
     </main>
 
-    <!-- Scripts -->
     <script src="src/js/components/header.js"></script>
     <script src="src/js/components/card-renderer.js"></script>
     <script>
-        // Проверка API
-        fetch('/api/health')
-            .then(r => r.json())
-            .then(d => {
-                const s = document.getElementById('status');
-                s.innerHTML = `✅ Сервер: ${d.status}`;
-                s.style.color = 'green';
-            })
-            .catch(() => {
-                document.getElementById('status').innerText = '❌ Ошибка подключения';
-            });
+        // Простой скрипт прямо в HTML для скорости, или вынеси в src/js/pages/home.js
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('fresh-listings');
+            
+            try {
+                // Запрашиваем 8 последних объявлений
+                const res = await fetch('/api/listings?limit=8');
+                const listings = await res.json();
+
+                container.innerHTML = '';
+
+                if (listings.length === 0) {
+                    container.innerHTML = '<div class="empty-state">Пока нет объявлений</div>';
+                    return;
+                }
+
+                listings.forEach(item => {
+                    container.innerHTML += renderCard(item);
+                });
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+            }
+        });
     </script>
 </body>
 </html>
