@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Объявление - TradeCloud</title>
+    <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/components/header.css">
+    <link rel="stylesheet" href="src/css/pages/listing.css">
+</head>
+<body>
+
+    <div id="header-container"></div>
+
+    <main class="listing-container" id="main-content">
+        <!-- Сюда JS загрузит контент, но сделаем скелет -->
+        
+        <!-- Левая колонка -->
+        <div class="left-col">
+            <div class="gallery-wrapper">
+                <div class="main-image-frame">
+                    <img id="main-img" src="" class="main-image" alt="Фото товара">
+                    <!-- Плашка типа -->
+                    <div id="type-badge" style="position:absolute; top:20px; left:20px;"></div>
+                </div>
+                <div class="thumbs-list" id="thumbs-container">
+                    <!-- Миниатюры -->
+                </div>
+            </div>
+
+            <div class="listing-details">
+                <h2 class="details-title">Описание</h2>
+                <div class="description-text" id="desc-text"></div>
+                
+                <div style="margin-top: 20px; color: #999; font-size: 14px;">
+                    Опубликовано: <span id="publish-date"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="right-col">
+            <div class="action-card">
+                <h1 id="listing-title" style="font-size: 24px; margin-bottom: 10px; line-height: 1.2;">Загрузка...</h1>
+                
+                <div class="price-block">
+                    <div class="price-label" id="price-label">Цена</div>
+                    <div class="current-price" id="price-val">...</div>
+                </div>
+
+                <!-- Блок аукциона (Скрыт по умолчанию) -->
+                <div id="auction-interface" style="display: none;">
+                    <div class="auction-timer" id="timer-box">
+                        <i class='bx bx-time-five'></i> <span id="timer-val">--:--:--</span>
+                    </div>
+                    
+                    <p style="font-size: 14px; margin-bottom: 5px;">Текущая ставка: <b id="current-bid">0 ₽</b></p>
+                    <p style="font-size: 12px; color: #777;">Мин. шаг: <span id="bid-step"></span> ₽</p>
+
+                    <form class="bid-form" id="bid-form">
+                        <input type="number" class="custom-input" id="bid-input" placeholder="Сумма" required style="padding: 10px;">
+                        <button type="submit" class="btn-create" style="background: var(--accent-color);">Ставка</button>
+                    </form>
+                    <p id="bid-msg" style="font-size: 12px; margin-top: 5px;"></p>
+
+                    <div class="history-list" id="bid-history">
+                        <!-- История ставок -->
+                    </div>
+                </div>
+
+                <!-- Кнопки действий (для обычных товаров) -->
+                <div id="standard-actions">
+                    <button class="btn-create" style="width: 100%; justify-content: center; margin-bottom: 10px;">
+                        Показать телефон
+                    </button>
+                    <button class="btn-catalog" style="width: 100%; justify-content: center; background: white; border: 1px solid var(--primary-color); color: var(--primary-color);">
+                        <i class='bx bx-message-rounded-dots'></i> Написать сообщение
+                    </button>
+                </div>
+
+                <!-- Продавец -->
+                <div class="seller-block" id="seller-link">
+                    <img src="" id="seller-ava" class="seller-avatar">
+                    <div>
+                        <div style="font-weight: 600;" id="seller-name"></div>
+                        <div style="font-size: 13px; color: #777;">Рейтинг: <span id="seller-rating"></span> ⭐</div>
+                    </div>
+                </div>
+
+                <!-- Избранное -->
+                <div style="margin-top: 20px; text-align: center;">
+                     <button id="fav-btn" style="background: none; border: none; cursor: pointer; color: #777; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 5px; margin: 0 auto;">
+                        <i class='bx bx-heart' style="font-size: 20px;"></i> Добавить в избранное
+                     </button>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script src="src/js/components/header.js"></script>
+    <script src="src/js/pages/listing.js"></script>
+</body>
+</html>

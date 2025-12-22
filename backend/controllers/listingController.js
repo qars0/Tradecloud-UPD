@@ -157,3 +157,114 @@ exports.getListings = async (req, res) => {
         res.status(500).json({ message: 'Ошибка получения списка' });
     }
 };
+
+// Получить одно объявление по ID
+exports.getListingById = async (req, res) => {
+    try {
+        const listingId = req.params.id;
+        console.log(`🔎 Ищу объявление с ID: ${listingId}`);
+        const currentUserId = req.session.user ? req.session.user.id : null;
+
+        // 1. Получаем само объявление + инфо об авторе
+        // Используем LEFT JOIN с bids, чтобы сразу найти макс. ставку
+        const query = `
+            SELECT 
+                l.*, 
+                u.username, u.full_name, u.avatar_url as author_avatar, u.rating as author_rating, u.created_at as author_joined,
+                (SELECT MAX(amount) FROM bids WHERE listing_id = l.id) as current_max_bid,
+                (SELECT COUNT(*) FROM bids WHERE listing_id = l.id) as bid_count,
+                (CASE WHEN f.user_id IS NOT NULL THEN TRUE ELSE FALSE END) as is_favorite
+            FROM listings l
+            JOIN users u ON l.user_id = u.id
+            LEFT JOIN favorites f ON l.id = f.listing_id AND f.user_id = $2
+            WHERE l.id = $1
+        `;
+        const listingRes = await pool.query(query, [listingId, currentUserId]);
+
+        if (listingRes.rows.length === 0) {
+            return res.status(404).json({ message: 'Объявление не найдено' });
+        }
+        const listing = listingRes.rows[0];
+
+        // 2. Получаем картинки
+        const imagesRes = await pool.query(
+            'SELECT image_url FROM listing_images WHERE listing_id = $1 ORDER BY is_main DESC',
+            [listingId]
+        );
+        listing.images = imagesRes.rows;
+        // 3. Получаем историю ставок (только для аукциона)
+        if (listing.type === 'auction') {
+            const historyRes = await pool.query(`
+                SELECT b.amount, b.created_at, u.username 
+                FROM bids b
+                JOIN users u ON b.bidder_id = u.id
+                WHERE b.listing_id = $1
+                ORDER BY b.amount DESC
+                LIMIT 10
+            `, [listingId]);
+            listing.bid_history = historyRes.rows;
+            // Если ставок нет, текущая цена = начальной
+            listing.current_price = listing.current_max_bid || listing.auction_start_price;
+        }
+        res.json(listing);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+};
+
+// Сделать ставку (Аукцион)
+exports.placeBid = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ message: 'Нужна авторизация' });
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const { listing_id, amount } = req.body;
+        const userId = req.session.user.id;
+        const bidAmount = parseFloat(amount);
+
+        // 1. Блокируем строку объявления для проверки (чтобы избежать гонки ставок)
+        const listingRes = await client.query('SELECT * FROM listings WHERE id = $1 FOR UPDATE', [listing_id]);
+        
+        if (listingRes.rows.length === 0) throw new Error('Объявление не найдено');
+        const listing = listingRes.rows[0];
+
+        if (listing.type !== 'auction') throw new Error('Это не аукцион');
+        if (listing.user_id === userId) throw new Error('Нельзя ставить на свой лот');
+        if (new Date(listing.auction_end_date) < new Date()) throw new Error('Аукцион завершен');
+
+        // 2. Получаем текущую макс ставку
+        const maxBidRes = await client.query('SELECT MAX(amount) as max_bid FROM bids WHERE listing_id = $1', [listing_id]);
+        const currentMax = parseFloat(maxBidRes.rows[0].max_bid) || parseFloat(listing.auction_start_price);
+
+        // 3. Валидация
+        // Ставка должна быть больше текущей МИНИМУМ на шаг (если ставок нет — то >= стартовой)
+        const minNextBid = (maxBidRes.rows[0].max_bid) 
+            ? currentMax + parseFloat(listing.auction_step) 
+            : parseFloat(listing.auction_start_price);
+
+        if (bidAmount < minNextBid) {
+            throw new Error(`Минимальная ставка: ${minNextBid} ₽`);
+        }
+
+        // 4. Записываем ставку
+        await client.query(
+            'INSERT INTO bids (listing_id, bidder_id, amount) VALUES ($1, $2, $3)',
+            [listing_id, userId, bidAmount]
+        );
+
+        // 5. Можно добавить уведомление предыдущему лидеру (тут пропустим для простоты)
+
+        await client.query('COMMIT');
+        res.json({ message: 'Ставка принята!', new_price: bidAmount });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ message: err.message || 'Ошибка ставки' });
+    } finally {
+        client.release();
+    }
+};

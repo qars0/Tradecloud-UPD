@@ -3,13 +3,20 @@ const router = express.Router();
 const listingController = require('../controllers/listingController');
 const upload = require('../middleware/upload');
 
-// Получить список (ставим ДО '/:id', чтобы не конфликтовало)
-router.get('/', listingController.getListings); 
 
-// Получить категории
+// 1. Получить категории (В САМОМ ВЕРХУ)
 router.get('/categories', listingController.getCategories);
 
-// Создать объявление (до 5 фото)
+// 2. Сделать ставку
+router.post('/bid', listingController.placeBid);
+
+// 3. Получить список всех объявлений
+router.get('/', listingController.getListings);
+
+// 4. Создать объявление
 router.post('/', upload.array('images', 5), listingController.createListing);
+
+// 5. Динамический маршрут с ID
+router.get('/:id', listingController.getListingById);
 
 module.exports = router;
