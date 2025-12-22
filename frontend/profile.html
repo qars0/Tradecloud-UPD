@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Профиль - TradeCloud</title>
+    <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/components/header.css">
+    <link rel="stylesheet" href="src/css/pages/profile.css">
+</head>
+<body>
+
+    <div id="header-container"></div>
+
+    <main class="main-container">
+        
+        <!-- Левая колонка: Карточка -->
+        <aside class="profile-card">
+            <div class="avatar-wrapper">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" class="profile-avatar-large" id="profile-avatar-img">
+                <!-- Скрытый инпут для загрузки -->
+                <input type="file" id="avatar-upload" hidden accept="image/*">
+                <label for="avatar-upload" class="avatar-edit-btn" title="Изменить фото">
+                    <i class='bx bx-camera'></i>
+                </label>
+            </div>
+
+            <h1 class="profile-name" id="profile-name">Загрузка...</h1>
+            <div class="profile-status">
+                <span style="width: 8px; height: 8px; background: #2ecc71; border-radius: 50%; display: inline-block;"></span>
+                Онлайн
+            </div>
+
+            <div class="rating-badge">
+                <i class='bx bxs-star'></i>
+                <span id="profile-rating">0.0</span>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Товаров</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Продаж</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="join-date">-</div>
+                    <div class="stat-label">На сайте</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Правая колонка: Табы и Контент -->
+        <section class="content-area">
+            
+            <!-- Меню вкладок -->
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="listings">
+                    <i class='bx bx-grid-alt'></i> Объявления
+                </button>
+                <button class="tab-btn" data-tab="reviews">
+                    <i class='bx bx-comment-detail'></i> Отзывы
+                </button>
+                <button class="tab-btn" data-tab="settings">
+                    <i class='bx bx-cog'></i> Настройки
+                </button>
+            </div>
+
+            <!-- Вкладка 1: Объявления -->
+            <div class="tab-content active" id="tab-listings">
+                <div id="listings-container" class="listings-grid">
+                    <!-- JS сгенерирует здесь карточки. Пока заглушка -->
+                    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-light);">
+                        <i class='bx bx-ghost' style="font-size: 48px;"></i>
+                        <p>У вас пока нет активных объявлений</p>
+                        <a href="/create-listing.html" class="btn-create" style="display: inline-block; margin-top: 10px;">Создать первое</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка 2: Отзывы -->
+            <div class="tab-content" id="tab-reviews">
+                <div id="reviews-container">
+                    <!-- Заглушка отзывов (Для демонстрации дизайна) -->
+                    <div class="review-card">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" class="review-avatar">
+                        <div style="flex: 1;">
+                            <div class="review-header">
+                                <span class="review-author">Иван Иванов</span>
+                                <div class="review-stars">
+                                    <i class='bx bxs-star'></i>
+                                    <i class='bx bxs-star'></i>
+                                    <i class='bx bxs-star'></i>
+                                    <i class='bx bxs-star'></i>
+                                    <i class='bx bxs-star'></i>
+                                </div>
+                            </div>
+                            <p style="color: #555; font-size: 14px;">Отличный продавец! Быстро отправил, товар соответствует описанию. Рекомендую!</p>
+                            <span style="color: #999; font-size: 12px; margin-top: 5px; display: block;">2 дня назад</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка 3: Настройки -->
+            <div class="tab-content" id="tab-settings">
+                <h2 style="margin-bottom: 20px;">Редактирование профиля</h2>
+                <form class="settings-form" id="settings-form">
+                    <div class="form-group">
+                        <label>Имя пользователя</label>
+                        <input type="text" class="form-control" name="username" id="input-username">
+                    </div>
+                    <div class="form-group">
+                        <label>Телефон</label>
+                        <input type="tel" class="form-control" name="phone" id="input-phone">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" name="email" id="input-email">
+                    </div>
+                    <button type="submit" class="btn-catalog" style="border-radius: 10px; padding: 12px 30px;">
+                        Сохранить изменения
+                    </button>
+                    <p id="save-msg" style="margin-top: 10px; font-size: 14px;"></p>
+                </form>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="src/js/components/header.js"></script>
+    <script src="src/js/pages/profile.js"></script>
+</body>
+</html>
