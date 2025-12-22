@@ -30,10 +30,12 @@ document.querySelectorAll('.toggle-password').forEach(icon => {
         const input = this.previousElementSibling; // Инпут перед иконкой
         
         if (input.type === 'password') {
+            // Показываем пароль
             input.type = 'text';
-            this.classList.remove('bx-hide');
-            this.classList.add('bx-show');
+            this.classList.remove('bx-hide'); // Удаляем "скрытый"
+            this.classList.add('bx-show');    // Добавляем "показать"
         } else {
+            // Скрываем пароль
             input.type = 'password';
             this.classList.remove('bx-show');
             this.classList.add('bx-hide');

@@ -13,7 +13,8 @@ const pool = new Pool({
 });
 
 exports.register = async (req, res) => {
-    const { username, email, password } = req.body;
+    // Добавили phone в деструктуризацию
+    const { username, email, password, phone } = req.body;
 
     try {
         // 1. Проверка существования пользователя
@@ -30,13 +31,13 @@ exports.register = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        // 3. Создание пользователя
+        // 3. Создание пользователя (Добавили phone в INSERT)
         const newUser = await pool.query(
-            'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, avatar_url',
-            [username, email, passwordHash]
+            'INSERT INTO users (username, email, password_hash, phone) VALUES ($1, $2, $3, $4) RETURNING id, username, email, avatar_url, phone',
+            [username, email, passwordHash, phone]
         );
 
-        // 4. Автоматический вход (создание сессии)
+        // 4. Автоматический вход
         req.session.user = newUser.rows[0];
         
         res.status(201).json({ 

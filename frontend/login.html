@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TradeCloud - Вход и Регистрация</title>
     <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
-    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="src/css/main.css">
     <link rel="stylesheet" href="src/css/components/header.css">
     <link rel="stylesheet" href="src/css/pages/auth.css">
@@ -18,8 +18,7 @@
         <div class="container">
             <div class="forms-container">
                 <div class="signin-signup">
-                    
-                    <!-- ВХОД -->
+                    <!-- ... Форма Входа ... -->
                     <form action="#" class="sign-in-form" id="login-form">
                         <h2 class="title">Вход</h2>
                         <div class="input-field">
@@ -35,7 +34,7 @@
                         <input type="submit" value="Войти" class="btn-solid" />
                     </form>
 
-                    <!-- РЕГИСТРАЦИЯ -->
+                    <!-- Форма Регистрации -->
                     <form action="#" class="sign-up-form" id="register-form">
                         <h2 class="title">Регистрация</h2>
                         <div class="input-field">
@@ -45,6 +44,11 @@
                         <div class="input-field">
                             <i class='bx bxs-envelope icon-left'></i>
                             <input type="email" placeholder="Email" name="email" required />
+                        </div>
+                        <!-- Новое поле Телефон -->
+                        <div class="input-field">
+                            <i class='bx bxs-phone icon-left'></i>
+                            <input type="tel" placeholder="Телефон" name="phone" required />
                         </div>
                         <div class="input-field">
                             <i class='bx bxs-lock-alt icon-left'></i>
@@ -58,18 +62,21 @@
             </div>
 
             <div class="panels-container">
+                <!-- Левая панель (Видна по умолчанию) -->
                 <div class="panel left-panel">
-                    <div class="content">
-                        <h3>Уже есть аккаунт?</h3>
-                        <p>Войдите, чтобы управлять объявлениями.</p>
-                        <button class="btn-transparent" id="sign-in-btn">Войти</button>
-                    </div>
-                </div>
-                <div class="panel right-panel">
                     <div class="content">
                         <h3>Нет аккаунта?</h3>
                         <p>Создайте профиль и начните торговать сейчас.</p>
                         <button class="btn-transparent" id="sign-up-btn">Регистрация</button>
+                    </div>
+                </div>
+                
+                <!-- Правая панель (Видна при регистрации) -->
+                <div class="panel right-panel">
+                    <div class="content">
+                        <h3>Уже есть аккаунт?</h3>
+                        <p>Войдите, чтобы управлять объявлениями.</p>
+                        <button class="btn-transparent" id="sign-in-btn">Войти</button>
                     </div>
                 </div>
             </div>
