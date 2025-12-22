@@ -73,3 +73,27 @@ exports.updateProfile = async (req, res) => {
         res.status(500).json({ message: 'Ошибка при обновлении' });
     }
 };
+
+// Получить публичный профиль другого пользователя
+exports.getUserById = async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const query = `
+            SELECT id, username, avatar_url, rating, created_at 
+            FROM users 
+            WHERE id = $1
+        `;
+        const result = await pool.query(query, [userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        // Возвращаем только публичные данные
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+};

@@ -202,7 +202,7 @@
     display: none; /* Скрыто по умолчанию */
     position: absolute;
     right: 0;
-    top: 50px;
+    top: 40px;
     width: 200px;
     background: white;
     border-radius: var(--border-radius-medium);

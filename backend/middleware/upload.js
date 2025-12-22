@@ -1,5 +1,12 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+// Проверяем и создаем папку uploads, если её нет
+const uploadDir = 'uploads';
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
 
 // Настройка хранилища
 const storage = multer.diskStorage({

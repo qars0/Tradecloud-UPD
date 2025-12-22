@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя - TradeCloud</title>
+    <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/components/header.css">
+    <!-- Используем тот же CSS профиля -->
+    <link rel="stylesheet" href="src/css/pages/profile.css">
+</head>
+<body>
+
+    <div id="header-container"></div>
+
+    <main class="main-container">
+        
+        <!-- Карточка -->
+        <aside class="profile-card">
+            <div class="avatar-wrapper" style="border: none;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" class="profile-avatar-large" id="profile-avatar-img">
+                <!-- Кнопки редактирования удалены -->
+            </div>
+
+            <h1 class="profile-name" id="profile-name">...</h1>
+            
+            <div class="profile-status">
+                <span id="status-indicator" style="width: 8px; height: 8px; background: #ccc; border-radius: 50%; display: inline-block;"></span>
+                <span id="status-text">Оффлайн</span>
+            </div>
+
+            <div class="rating-badge">
+                <i class='bx bxs-star'></i>
+                <span id="profile-rating">0.0</span>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Товаров</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Продаж</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="join-date">-</div>
+                    <div class="stat-label">На сайте</div>
+                </div>
+            </div>
+
+            <!-- Кнопка действия -->
+            <button id="write-msg-btn" class="btn-catalog" style="margin-top: 20px; width: 100%; justify-content: center; background: var(--accent-color);">
+                <i class='bx bx-message-rounded-dots'></i> Написать
+            </button>
+        </aside>
+
+        <!-- Контент -->
+        <section class="content-area">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="listings">
+                    <i class='bx bx-grid-alt'></i> Объявления пользователя
+                </button>
+                <button class="tab-btn" data-tab="reviews">
+                    <i class='bx bx-comment-detail'></i> Отзывы
+                </button>
+                <!-- Настройки удалены -->
+            </div>
+
+            <div class="tab-content active" id="tab-listings">
+                <div id="listings-container" class="listings-grid">
+                    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-light);">
+                        <i class='bx bx-package' style="font-size: 48px;"></i>
+                        <p>Нет активных объявлений</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-reviews">
+                <div id="reviews-container">
+                    <div style="padding: 20px; text-align: center; color: var(--text-light);">
+                        Пока нет отзывов
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="src/js/components/header.js"></script>
+    <script src="src/js/pages/public-profile.js"></script>
+</body>
+</html>

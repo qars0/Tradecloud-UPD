@@ -22,6 +22,12 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
+
+// ВАЖНО: Раздача папки uploads по адресу /uploads
+// path.join(__dirname, 'uploads') гарантирует правильный абсолютный путь
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Session Config (ВАЖНО)
 app.use(session({
     store: new pgSession({

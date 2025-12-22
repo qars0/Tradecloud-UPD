@@ -9,4 +9,7 @@ router.get('/me', userController.getMe);
 // PUT /api/user/update (с поддержкой файла 'avatar')
 router.put('/update', upload.single('avatar'), userController.updateProfile);
 
+// GET /api/user/:id (Публичный профиль)
+router.get('/:id', userController.getUserById);
+
 module.exports = router;
