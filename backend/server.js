@@ -1,14 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session); // Для хранения сессий в БД
 const { Pool } = require('pg');
 require('dotenv').config();
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(cors());
-app.use(express.json());
 
 // Database Connection (Pure SQL)
 const pool = new Pool({
@@ -18,6 +17,26 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
 });
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+
+
+app.use(session({
+    store: new pgSession({
+        pool: pool,                // Используем наш пул подключений
+        tableName: 'session'       // Таблица, которую мы создали
+    }),
+    secret: process.env.SESSION_SECRET || 'dev_secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
+        httpOnly: true
+    }
+}));
 
 // Test Route
 app.get('/api/health', async (req, res) => {
@@ -37,3 +56,7 @@ app.get('/api/health', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+// Routes
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);

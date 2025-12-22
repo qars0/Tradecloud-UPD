@@ -1,0 +1,239 @@
+/* Основной контейнер хедера */
+.header {
+    width: 100%;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: var(--blur-effect);
+    -webkit-backdrop-filter: var(--blur-effect);
+    border-bottom: 1px solid #E0E0E0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    box-shadow: var(--shadow-light);
+}
+
+.header__content {
+    width: var(--container-width);
+    max-width: 95%; /* Адаптив */
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Логотип */
+.header__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+.header__logo i {
+    font-size: 32px;
+}
+
+.header__logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: var(--font-family);
+}
+
+/* Центральная часть */
+.header__center {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    max-width: 800px;
+}
+
+.btn-catalog {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius-pill);
+    font-family: var(--font-family);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.btn-catalog:hover {
+    background-color: #2b6cb0;
+}
+
+.header__search {
+    flex: 1;
+    position: relative;
+}
+
+.header__search input {
+    width: 100%;
+    height: 40px;
+    padding: 0 15px 0 40px;
+    border: 1px solid var(--gray-medium);
+    border-radius: var(--border-radius-pill);
+    font-family: var(--font-family);
+    font-size: 14px;
+    outline: none;
+    transition: border 0.2s;
+}
+
+.header__search input:focus {
+    border-color: var(--primary-color);
+}
+
+.header__search i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-dark);
+}
+
+.header__chat-btn {
+    font-size: 24px;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.header__chat-btn:hover {
+    color: var(--primary-color);
+}
+
+/* Правая часть (Авторизация/Профиль) */
+.header__right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header__auth-links {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.auth-link {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.auth-link.primary {
+    color: var(--primary-color);
+}
+
+/* Иконки профиля */
+.header__user-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icon-btn {
+    position: relative;
+    font-size: 24px;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.icon-btn:hover {
+    color: var(--primary-color);
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--danger-color);
+    color: white;
+    font-size: 10px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-create {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: var(--border-radius-pill);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: opacity 0.2s;
+}
+
+.btn-create:hover {
+    opacity: 0.9;
+}
+
+/* Профиль с дропдауном */
+.profile-dropdown {
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+}
+
+.dropdown-menu {
+    display: none; /* Скрыто по умолчанию */
+    position: absolute;
+    right: 0;
+    top: 50px;
+    width: 200px;
+    background: white;
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow-medium);
+    padding: 10px 0;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.profile-dropdown:hover .dropdown-menu {
+    display: flex;
+}
+
+.dropdown-item {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-size: 14px;
+    transition: background 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dropdown-item:hover {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: var(--gray-medium);
+    margin: 5px 0;
+}

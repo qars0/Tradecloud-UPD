@@ -3,41 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud - Загрузка...</title>
+    <title>TradeCloud - Главная</title>
+    
     <!-- Fonts -->
     <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
     <!-- Icons -->
     <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
     <link href='https://cdn.boxicons.com/3.0.6/fonts/brands/boxicons-brands.min.css' rel='stylesheet'>
+    
     <!-- Styles -->
     <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/components/header.css">
 </head>
 <body>
 
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 20px;">
-        <div style="font-size: 48px; color: var(--primary-color);">
-            <i class='bx bx-cloud-alt'></i> TradeCloud
-        </div>
-        <div id="status" style="font-size: 20px;">Подключение к серверу...</div>
-    </div>
+    <!-- Сюда JS вставит хедер -->
+    <div id="header-container"></div>
 
-    <script>
-        // Проверка связи с бэкендом
-        fetch('/api/health')
-            .then(res => res.json())
-            .then(data => {
-                const statusDiv = document.getElementById('status');
-                if(data.status === 'OK') {
-                    statusDiv.innerHTML = `✅ Бэкенд работает! <br> Время БД: ${data.db_time}`;
-                    statusDiv.style.color = 'green';
-                    statusDiv.style.textAlign = 'center';
-                }
-            })
-            .catch(err => {
-                document.getElementById('status').innerText = '❌ Ошибка подключения к API';
-                document.getElementById('status').style.color = 'red';
-                console.error(err);
-            });
-    </script>
+    <main style="padding: 20px; max-width: var(--container-width); margin: 0 auto;">
+        <!-- Временные кнопки для теста хедера -->
+        <div style="margin-top: 100px; text-align: center;">
+            <h1>Добро пожаловать в TradeCloud</h1>
+            <p style="margin-bottom: 20px;">Тест переключения состояния хедера:</p>
+            <button onclick="localStorage.setItem('isLoggedIn', 'true'); location.reload();" style="padding: 10px;">
+                Войти (Эмуляция)
+            </button>
+            <button onclick="localStorage.setItem('isLoggedIn', 'false'); location.reload();" style="padding: 10px;">
+                Выйти (Эмуляция)
+            </button>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="src/js/components/header.js"></script>
 </body>
 </html>

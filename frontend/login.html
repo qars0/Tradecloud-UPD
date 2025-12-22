@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeCloud - Вход и Регистрация</title>
+    <!-- Fonts -->
+    <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <!-- Styles -->
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/components/header.css">
+    <link rel="stylesheet" href="src/css/pages/auth.css">
+</head>
+<body>
+
+    <div id="header-container"></div>
+
+    <div class="auth-container">
+        <div class="container">
+            <div class="forms-container">
+                <div class="signin-signup">
+                    
+                    <!-- Форма Входа -->
+                    <form action="#" class="sign-in-form" id="login-form">
+                        <h2 class="title">Вход</h2>
+                        <div class="input-field">
+                            <i class='bx bxs-user'></i>
+                            <input type="text" placeholder="Логин или Email" name="username" required />
+                        </div>
+                        <div class="input-field">
+                            <i class='bx bxs-lock-alt'></i>
+                            <input type="password" placeholder="Пароль" name="password" required />
+                        </div>
+                        <p class="error-msg" id="login-error"></p>
+                        <input type="submit" value="Войти" class="btn-solid" />
+                        <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                            Забыли пароль? <a href="#" style="color: var(--primary-color);">Восстановить</a>
+                        </p>
+                    </form>
+
+                    <!-- Форма Регистрации -->
+                    <form action="#" class="sign-up-form" id="register-form">
+                        <h2 class="title">Регистрация</h2>
+                        <div class="input-field">
+                            <i class='bx bxs-user'></i>
+                            <input type="text" placeholder="Придумайте логин" name="username" required />
+                        </div>
+                        <div class="input-field">
+                            <i class='bx bxs-envelope'></i>
+                            <input type="email" placeholder="Email" name="email" required />
+                        </div>
+                        <div class="input-field">
+                            <i class='bx bxs-lock-alt'></i>
+                            <input type="password" placeholder="Пароль" name="password" required />
+                        </div>
+                        <p class="error-msg" id="register-error"></p>
+                        <input type="submit" value="Создать" class="btn-solid" />
+                    </form>
+                </div>
+            </div>
+
+            <div class="panels-container">
+                <!-- Панель слева (видима при регистрации) -->
+                <div class="panel left-panel">
+                    <div class="content">
+                        <h3>Уже есть аккаунт?</h3>
+                        <p>Войдите, чтобы управлять своими объявлениями и общаться с продавцами.</p>
+                        <button class="btn-transparent" id="sign-in-btn">Войти</button>
+                    </div>
+                </div>
+                
+                <!-- Панель справа (видима при входе) -->
+                <div class="panel right-panel">
+                    <div class="content">
+                        <h3>Впервые здесь?</h3>
+                        <p>Создайте аккаунт, чтобы начать продавать и покупать безопасно.</p>
+                        <button class="btn-transparent" id="sign-up-btn">Регистрация</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/js/components/header.js"></script>
+    <script src="src/js/pages/auth.js"></script>
+</body>
+</html>
