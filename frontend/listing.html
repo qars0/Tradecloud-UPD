@@ -80,6 +80,12 @@
                     <button id="btn-write-msg" class="btn-catalog" style="width: 100%; justify-content: center; background: white; border: 1px solid var(--primary-color); color: var(--primary-color);">
                         <i class='bx bx-message-rounded-dots'></i> Написать сообщение
                     </button>
+
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button onclick="openReportModal()" style="background:none; border:none; color:#999; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:5px; margin:0 auto;">
+                            <i class='bx bx-flag'></i> Пожаловаться
+                        </button>
+                    </div>
                 </div>
 
                 <!-- ПАНЕЛЬ ВЛАДЕЛЬЦА (Скрыта по умолчанию) -->
@@ -116,7 +122,32 @@
 
     </main>
 
+    <!-- Модальное окно жалобы (Вставь перед </body>) -->
+    <div class="modal-overlay" id="report-modal">
+        <div class="modal-window">
+            <i class='bx bx-x modal-close' onclick="closeReportModal()"></i>
+            <h2 class="modal-title">Пожаловаться</h2>
+            <form id="report-form">
+                <div class="input-group">
+                    <label>Причина</label>
+                    <select class="custom-select" name="reason" required>
+                        <option value="spam">Спам / Реклама</option>
+                        <option value="fraud">Мошенничество</option>
+                        <option value="forbidden">Запрещенный товар</option>
+                        <option value="other">Другое</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Комментарий</label>
+                    <textarea class="custom-textarea" name="comment" required></textarea>
+                </div>
+                <button type="submit" class="btn-create" style="width:100%; background:var(--danger-color)">Отправить</button>
+            </form>
+        </div>
+    </div>
+
     <script src="src/js/components/header.js"></script>
+    <script src="src/js/components/card-renderer.js"></script>
     <script src="src/js/pages/listing.js"></script>
 </body>
 </html>

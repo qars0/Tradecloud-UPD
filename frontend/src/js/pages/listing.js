@@ -394,3 +394,45 @@ if (writeBtn) {
         }
     };
 }
+
+// Глобальные функции для модалки
+window.openReportModal = function() {
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = '/login.html';
+        return;
+    }
+    const modal = document.getElementById('report-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('open'), 10);
+};
+
+window.closeReportModal = function() {
+    const modal = document.getElementById('report-modal');
+    modal.classList.remove('open');
+    setTimeout(() => modal.style.display = 'none', 300);
+};
+
+// Обработка формы
+document.getElementById('report-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+        const res = await fetch('/api/listings/report', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                listing_id: currentListing.id,
+                reason: formData.get('reason'),
+                comment: formData.get('comment')
+            })
+        });
+        
+        if (res.ok) {
+            alert('Жалоба отправлена. Спасибо!');
+            closeReportModal();
+        } else {
+            alert('Ошибка отправки');
+        }
+    } catch (err) { console.error(err); }
+});

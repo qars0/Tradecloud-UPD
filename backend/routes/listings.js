@@ -25,4 +25,6 @@ router.delete('/:id', listingController.deleteListing); // Удалить (DELET
 
 router.put('/:id/status', listingController.updateStatus); // Обновить статус (PUT)
 
+router.post('/report', listingController.reportListing);
+
 module.exports = router;

@@ -359,3 +359,22 @@ exports.updateStatus = async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 };
+
+// Пожаловаться на объявление
+exports.reportListing = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ message: 'Нужна авторизация' });
+    
+    const { listing_id, reason, comment } = req.body;
+    const reporterId = req.session.user.id;
+
+    try {
+        await pool.query(
+            'INSERT INTO reports (listing_id, reporter_id, reason, comment) VALUES ($1, $2, $3, $4)',
+            [listing_id, reporterId, reason, comment]
+        );
+        res.json({ message: 'Жалоба отправлена администратору' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка отправки жалобы' });
+    }
+};
