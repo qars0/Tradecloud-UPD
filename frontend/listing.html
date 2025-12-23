@@ -14,138 +14,161 @@
 
     <div id="header-container"></div>
 
-    <main class="listing-container" id="main-content">
-        <!-- Сюда JS загрузит контент, но сделаем скелет -->
+    <main class="listing-wrapper" id="main-content">
         
-        <!-- Левая колонка -->
-        <div class="left-col">
-            <div class="gallery-wrapper">
+        <!-- ЛЕВАЯ КОЛОНКА -->
+        <div class="left-column">
+            
+            <!-- Галерея -->
+            <div class="gallery-card">
                 <div class="main-image-frame">
+                    <!-- Плашка статуса (генерируется JS) -->
+                    <div id="type-badge"></div> 
                     <img id="main-img" src="" class="main-image" alt="Фото товара">
-                    <!-- Плашка типа -->
-                    <div id="type-badge" style="position:absolute; top:20px; left:20px;"></div>
                 </div>
-                <div class="thumbs-list" id="thumbs-container">
+                <div class="thumbs-scroll" id="thumbs-container">
                     <!-- Миниатюры -->
                 </div>
             </div>
 
-            <div class="listing-details">
-                <h2 class="details-title">Описание</h2>
-                <div class="description-text" id="desc-text"></div>
-                
-                <div style="margin-top: 20px; color: #999; font-size: 14px;">
-                    Опубликовано: <span id="publish-date"></span>
+            <!-- Детали -->
+            <div class="details-card">
+                <div class="listing-header">
+                    <h1 class="listing-title" id="listing-title">Загрузка...</h1>
+                    <div class="listing-meta">
+                        <div class="meta-item">
+                            <i class='bx bx-calendar'></i> <span id="publish-date">...</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class='bx bx-show'></i> <span>123 просмотра</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class='bx bx-id-card'></i> ID: <span id="listing-id-display">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom:15px; font-size:20px;">Описание</h3>
+                <div class="description-content" id="desc-text">
+                    ...
                 </div>
             </div>
         </div>
 
-        <!-- Правая колонка -->
-        <div class="right-col">
+        <!-- ПРАВАЯ КОЛОНКА (Sticky) -->
+        <div class="right-column">
+            
+            <!-- Карточка Цены и Действий -->
             <div class="action-card">
-                <h1 id="listing-title" style="font-size: 24px; margin-bottom: 10px; line-height: 1.2;">Загрузка...</h1>
                 
-                <div class="price-block">
+                <!-- Блок цены -->
+                <div class="price-box" id="price-box">
                     <div class="price-label" id="price-label">Цена</div>
-                    <div class="current-price" id="price-val">...</div>
+                    <div style="display:flex; align-items:baseline; gap:5px;">
+                        <span class="main-price" id="price-val">...</span>
+                    </div>
                 </div>
 
-                <!-- Блок аукциона (Скрыт по умолчанию) -->
-                <div id="auction-interface" style="display: none;">
-                    <div class="auction-timer" id="timer-box">
-                        <i class='bx bx-time-five'></i> <span id="timer-val">--:--:--</span>
+                <!-- Блок Аукциона (Скрыт по умолчанию) -->
+                <div id="auction-interface" class="auction-ui" style="display: none;">
+                    <div style="text-align:center; margin-bottom:10px; font-size:14px; font-weight:600; color:#D35400">
+                        <span class="live-badge"></span> До конца торгов:
                     </div>
                     
-                    <p style="font-size: 14px; margin-bottom: 5px;">Текущая ставка: <b id="current-bid">0 ₽</b></p>
-                    <p style="font-size: 12px; color: #777;">Мин. шаг: <span id="bid-step"></span> ₽</p>
-
-                    <form class="bid-form" id="bid-form">
-                        <input type="number" class="custom-input" id="bid-input" placeholder="Сумма" required style="padding: 10px;">
-                        <button type="submit" class="btn-create" style="background: var(--accent-color);">Ставка</button>
-                    </form>
-                    <p id="bid-msg" style="font-size: 12px; margin-top: 5px;"></p>
-
-                    <div class="history-list" id="bid-history">
-                        <!-- История ставок -->
+                    <div class="timer-display">
+                        <div class="timer-part"><div class="time-val" id="t-days">0</div><div class="time-lbl">Дн</div></div>
+                        <div class="timer-part"><div class="time-val" id="t-hours">00</div><div class="time-lbl">Час</div></div>
+                        <div class="timer-part"><div class="time-val" id="t-min">00</div><div class="time-lbl">Мин</div></div>
+                        <div class="timer-part"><div class="time-val" id="t-sec">00</div><div class="time-lbl">Сек</div></div>
                     </div>
+
+                    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:10px; color:#555;">
+                        <span>Текущая ставка:</span>
+                        <span style="font-weight:700" id="current-bid">0 ₽</span>
+                    </div>
+
+                    <form id="bid-form" style="display:flex; gap:10px;">
+                        <input type="number" id="bid-input" placeholder="Сумма" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;" required>
+                        <button type="submit" class="btn-primary-action" style="padding:10px 20px;"><i class='bx bx-check'></i></button>
+                    </form>
+                    <div id="bid-msg" style="font-size:12px; margin-top:5px;"></div>
+                    
+                    <!-- История (свернутая) -->
+                    <div class="history-list" id="bid-history" style="margin-top:15px; max-height:100px; overflow-y:auto; font-size:12px;"></div>
                 </div>
 
                 <!-- Кнопки действий -->
-                <div id="standard-actions">
-                    <!-- ДОБАВИЛИ id="btn-show-phone" -->
-                    <button id="btn-show-phone" class="btn-create" style="width: 100%; justify-content: center; margin-bottom: 10px;">
-                        Показать телефон
+                <div class="action-btn-group" id="standard-actions">
+                    <button id="btn-show-phone" class="btn-primary-action">
+                        <i class='bx bx-phone'></i> Показать телефон
                     </button>
-                    
-                    <button id="btn-write-msg" class="btn-catalog" style="width: 100%; justify-content: center; background: white; border: 1px solid var(--primary-color); color: var(--primary-color);">
-                        <i class='bx bx-message-rounded-dots'></i> Написать сообщение
+                    <button id="btn-write-msg" class="btn-secondary-action">
+                        <i class='bx bx-message-rounded-dots'></i> Написать
                     </button>
-
-                    <div style="text-align: center; margin-top: 15px;">
-                        <button onclick="openReportModal()" style="background:none; border:none; color:#999; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:5px; margin:0 auto;">
-                            <i class='bx bx-flag'></i> Пожаловаться
-                        </button>
-                    </div>
-                </div>
-
-                <!-- ПАНЕЛЬ ВЛАДЕЛЬЦА (Скрыта по умолчанию) -->
-                <div id="owner-controls" style="display: none; border-top: 1px solid #eee; margin-top: 20px; padding-top: 15px;">
-                    <p style="font-size: 14px; color: #777; margin-bottom: 10px;">Управление объявлением:</p>
-                    
-                    <button id="btn-mark-sold" class="btn-create" style="width: 100%; margin-bottom: 10px; background: #6C757D;">
-                        Снять с продажи (Продано)
-                    </button>
-                    
-                    <button id="btn-delete" class="btn-create" style="width: 100%; background: var(--danger-color);">
-                        <i class='bx bx-trash'></i> Удалить
+                    <button id="fav-btn" class="btn-secondary-action" style="border:none; color:#777; background:none; font-size:14px;">
+                        <i class='bx bx-heart'></i> Добавить в избранное
                     </button>
                 </div>
 
-                <!-- Продавец -->
-                <div class="seller-block" id="seller-link">
-                    <img src="" id="seller-ava" class="seller-avatar">
-                    <div>
-                        <div style="font-weight: 600;" id="seller-name"></div>
-                        <div style="font-size: 13px; color: #777;">Рейтинг: <span id="seller-rating"></span> ⭐</div>
-                    </div>
+                <!-- Кнопка жалобы -->
+                <div style="text-align:center; margin-top:20px;">
+                    <button onclick="openReportModal()" style="background:none; border:none; color:#bbb; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; margin:0 auto; transition:0.2s">
+                        <i class='bx bx-flag'></i> Пожаловаться
+                    </button>
                 </div>
-
-                <!-- Избранное -->
-                <div style="margin-top: 20px; text-align: center;">
-                     <button id="fav-btn" style="background: none; border: none; cursor: pointer; color: #777; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 5px; margin: 0 auto;">
-                        <i class='bx bx-heart' style="font-size: 20px;"></i> Добавить в избранное
-                     </button>
-                </div>
-
             </div>
-        </div>
 
+            <!-- Карточка Продавца -->
+            <div class="seller-card" id="seller-link">
+                <img src="" id="seller-ava" class="seller-img">
+                <div class="seller-info">
+                    <h4 id="seller-name">Имя Продавца</h4>
+                    <div class="seller-rating">
+                        <i class='bx bxs-star'></i> <span id="seller-rating">0.0</span> 
+                        <span style="color:#999; font-weight:400; font-size:12px;">(смотреть профиль)</span>
+                    </div>
+                </div>
+                <i class='bx bx-chevron-right' style="margin-left:auto; color:#ccc; font-size:24px;"></i>
+            </div>
+
+            <!-- ПАНЕЛЬ ВЛАДЕЛЬЦА (Скрыта) -->
+            <div id="owner-controls" class="owner-panel" style="display: none;">
+                <h4 style="margin-bottom:15px; color:var(--text-dark)"><i class='bx bx-cog'></i> Управление</h4>
+                <div class="action-btn-group">
+                    <button id="btn-mark-sold" class="btn-secondary-action" style="font-size:14px;">Снять с продажи</button>
+                    <button id="btn-delete" class="btn-secondary-action" style="border-color:var(--danger-color); color:var(--danger-color); font-size:14px;">Удалить</button>
+                </div>
+            </div>
+
+        </div>
     </main>
 
-    <!-- Модальное окно жалобы (Вставь перед </body>) -->
+    <!-- Модальное окно жалобы -->
     <div class="modal-overlay" id="report-modal">
         <div class="modal-window">
-            <i class='bx bx-x modal-close' onclick="closeReportModal()"></i>
-            <h2 class="modal-title">Пожаловаться</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="font-size:20px; font-weight:700">Пожаловаться</h2>
+                <i class='bx bx-x' onclick="closeReportModal()" style="font-size:28px; cursor:pointer;"></i>
+            </div>
             <form id="report-form">
-                <div class="input-group">
-                    <label>Причина</label>
-                    <select class="custom-select" name="reason" required>
-                        <option value="spam">Спам / Реклама</option>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; font-size:14px; margin-bottom:5px; font-weight:600;">Причина</label>
+                    <select name="reason" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd;" required>
+                        <option value="spam">Спам</option>
                         <option value="fraud">Мошенничество</option>
                         <option value="forbidden">Запрещенный товар</option>
-                        <option value="other">Другое</option>
                     </select>
                 </div>
-                <div class="input-group">
-                    <label>Комментарий</label>
-                    <textarea class="custom-textarea" name="comment" required></textarea>
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; font-size:14px; margin-bottom:5px; font-weight:600;">Комментарий</label>
+                    <textarea name="comment" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; min-height:80px;" required></textarea>
                 </div>
-                <button type="submit" class="btn-create" style="width:100%; background:var(--danger-color)">Отправить</button>
+                <button type="submit" class="btn-primary-action" style="width:100%; background:var(--danger-color);">Отправить</button>
             </form>
         </div>
     </div>
 
+    <!-- Скрипты -->
     <script src="src/js/components/header.js"></script>
     <script src="src/js/components/card-renderer.js"></script>
     <script src="src/js/pages/listing.js"></script>
