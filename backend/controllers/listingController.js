@@ -92,11 +92,13 @@ exports.getListings = async (req, res) => {
         const { 
             user_id, limit, 
             search, category_id, type, 
-            min_price, max_price, sort 
+            min_price, max_price, sort,
+            status // <--- Добавим возможность передать статус извне
         } = req.query;
         
         const currentUserId = req.session.user ? req.session.user.id : null;
 
+        // ... начало запроса (SELECT ...) без изменений ...
         let query = `
             SELECT 
                 l.*, 
@@ -110,9 +112,22 @@ exports.getListings = async (req, res) => {
         `;
 
         const values = [currentUserId]; 
-        const conditions = ['l.status = \'active\'']; // Показываем только активные
+        const conditions = []; // <--- УБИРАЕМ отсюда жесткий 'active'
 
-        // --- Фильтры ---
+        // --- ЛОГИКА СТАТУСА ---
+        if (status) {
+            // Если статус передан явно (например ?status=sold)
+            conditions.push(`l.status = $${values.length + 1}`);
+            values.push(status);
+        } else if (user_id) {
+            // Если мы смотрим профиль конкретного юзера - показываем ВСЁ (active, sold, reserved)
+            // Кроме 'archived' (удаленных), если они у тебя будут
+            conditions.push(`l.status != 'archived'`);
+        } else {
+            // Во всех остальных случаях (Главная, Каталог) - только активные
+            conditions.push(`l.status = 'active'`);
+        }
+
         if (user_id) {
             conditions.push(`l.user_id = $${values.length + 1}`);
             values.push(user_id);
@@ -156,29 +171,28 @@ exports.getListings = async (req, res) => {
         }
 
         const result = await pool.query(query, values);
-
+        
+        // ... (mapping результата в listings остается прежним) ...
         const listings = result.rows.map(row => ({
             id: row.id,
             title: row.title,
             price: row.price,
             type: row.type,
-            status: row.status,
+            status: row.status, // Важно возвращать статус
             created_at: row.created_at,
             user_id: row.user_id,
             username: row.username,
             full_name: row.full_name,
             price_unit: row.price_unit,
             is_price_from: row.is_price_from,
-            auction_start_price: row.auction_start_price,
             images: row.image_url ? [{ image_url: row.image_url }] : [],
             is_favorite: row.is_favorite
         }));
 
         res.json(listings);
-
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Ошибка фильтрации' });
+        res.status(500).json({ message: 'Ошибка получения списка' });
     }
 };
 
