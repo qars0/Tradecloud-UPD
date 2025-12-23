@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPublicProfile(userId);
     loadUserListings(userId);
     setupTabs();
+    loadUserReviews(userId);
+    setupReviewModal(userId);
     
     // 3. Логика кнопки "Написать"
     const writeBtn = document.getElementById('write-msg-btn');
@@ -174,4 +176,117 @@ function setupTabs() {
             document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
         });
     });
-}2
+}
+
+// --- ЗАГРУЗКА ОТЗЫВОВ ---
+async function loadUserReviews(userId) {
+    const container = document.getElementById('reviews-container');
+    
+    try {
+        const res = await fetch(`/api/reviews/${userId}`);
+        const reviews = await res.json();
+
+        container.innerHTML = '';
+
+        if (reviews.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:50px; color:#999;">
+                    <i class='bx bx-star' style="font-size:48px; opacity:0.5"></i>
+                    <p>Отзывов пока нет. Будьте первым!</p>
+                </div>
+            `;
+            return;
+        }
+
+        reviews.forEach(review => {
+            // Генерируем звезды
+            let starsHtml = '';
+            for(let i=1; i<=5; i++) {
+                if(i <= review.rating) starsHtml += "<i class='bx bxs-star'></i>";
+                else starsHtml += "<i class='bx bx-star' style='color:#ddd'></i>";
+            }
+
+            const date = new Date(review.created_at).toLocaleDateString('ru-RU');
+
+            const html = `
+                <div class="review-card">
+                    <div class="review-avatar-box">
+                        <img src="${review.avatar_url || 'https://via.placeholder.com/50'}" class="review-avatar">
+                    </div>
+                    <div class="review-content">
+                        <div class="review-header">
+                            <div>
+                                <div class="review-author-name">${review.full_name || review.username}</div>
+                                <div class="review-stars-display">${starsHtml}</div>
+                            </div>
+                            <div class="review-date">${date}</div>
+                        </div>
+                        <div class="review-text">${review.comment || ''}</div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// --- МОДАЛЬНОЕ ОКНО ---
+function setupReviewModal(targetUserId) {
+    const modal = document.getElementById('review-modal');
+    const openBtn = document.getElementById('write-review-btn');
+    const closeBtn = document.getElementById('close-modal');
+    const form = document.getElementById('review-form');
+
+    // Открытие
+    openBtn.addEventListener('click', () => {
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = '/login.html';
+            return;
+        }
+        modal.classList.add('open');
+    });
+
+    // Закрытие
+    closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+    
+    // Закрытие по клику вне окна
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('open');
+    });
+
+    // Отправка формы
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const rating = formData.get('rating');
+        const comment = formData.get('comment');
+
+        try {
+            const res = await fetch('/api/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target_id: targetUserId, rating, comment })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert('Спасибо за отзыв!');
+                modal.classList.remove('open');
+                form.reset();
+                // Обновляем список и рейтинг без перезагрузки
+                loadUserReviews(targetUserId);
+                document.getElementById('profile-rating').innerText = data.newRating;
+            } else {
+                alert(data.message); // Например "Нельзя писать самому себе"
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Ошибка сети');
+        }
+    });
+}

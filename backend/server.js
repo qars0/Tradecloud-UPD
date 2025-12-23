@@ -92,12 +92,14 @@ const userRoutes = require('./routes/user');
 const listingRoutes = require('./routes/listings');
 const favoriteRoutes = require('./routes/favorites');
 const chatRoutes = require('./routes/chats');
+const reviewRoutes = require('./routes/reviews');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Test Route
 app.get('/api/health', async (req, res) => {

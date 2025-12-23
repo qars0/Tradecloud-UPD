@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="src/css/components/header.css">
     <link rel="stylesheet" href="src/css/components/cards.css"> <!-- Стили карточек -->
     <link rel="stylesheet" href="src/css/pages/profile.css">   <!-- Стили профиля -->
+    <link rel="stylesheet" href="src/css/pages/reviews.css">
 </head>
 <body>
 
@@ -54,9 +55,16 @@
             </div>
 
             <!-- Кнопка действия -->
-            <button id="write-msg-btn" class="btn-catalog" style="margin-top: 20px; width: 100%; justify-content: center; background: var(--accent-color);">
-                <i class='bx bx-message-rounded-dots'></i> Написать
-            </button>
+            <div id="profile-actions" style="display: flex; gap: 10px; margin-top: 20px; width: 100%;">
+                <button id="write-msg-btn" class="btn-catalog" style="flex: 1; justify-content: center; background: var(--accent-color);">
+                    <i class='bx bx-message-rounded-dots'></i> Написать
+                </button>
+                
+                <!-- Кнопка отзыва (оранжевая со звездой) -->
+                <button id="write-review-btn" class="btn-catalog" style="width: 50px; padding: 0; justify-content: center; background: #FF9500; border: none;">
+                    <i class='bx bxs-star' style="font-size: 20px;"></i>
+                </button>
+            </div>
         </aside>
 
         <!-- Правая колонка: Контент -->
@@ -93,6 +101,31 @@
 
         </section>
     </main>
+
+    <div class="modal-overlay" id="review-modal">
+        <div class="modal-window">
+            <i class='bx bx-x modal-close' id="close-modal"></i>
+            <h2 class="modal-title">Оценить пользователя</h2>
+            
+            <form id="review-form">
+                <!-- Звезды (порядок 5-4-3-2-1 из-за row-reverse) -->
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required /><label for="star5" title="Отлично"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Хорошо"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="Нормально"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="Плохо"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="Ужасно"><i class='bx bxs-star'></i></label>
+                </div>
+
+                <div class="input-group">
+                    <label>Ваш комментарий</label>
+                    <textarea class="custom-textarea" name="comment" placeholder="Расскажите, как прошла сделка..." style="min-height: 100px;"></textarea>
+                </div>
+
+                <button type="submit" class="btn-apply" style="margin-top: 20px; width: 100%;">Опубликовать отзыв</button>
+            </form>
+        </div>
+    </div>
 
     <script src="src/js/components/header.js"></script>
     <script src="src/js/components/card-renderer.js"></script>
