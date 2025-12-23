@@ -1,10 +1,9 @@
-/* src/js/components/header.js */
 class HeaderComponent {
     constructor() {
         this.container = document.getElementById('header-container');
         this.isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
         this.user = JSON.parse(localStorage.getItem('user')) || {
-            name: 'User',
+            name: 'Гость',
             avatar: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
         };
     }
@@ -26,7 +25,7 @@ class HeaderComponent {
                 </button>
                 <div class="header__search">
                     <i class='bx bx-search'></i>
-                    <input type="text" placeholder="Поиск товаров и услуг...">
+                    <input type="text" placeholder="Поиск товаров..." id="global-search">
                 </div>
                 <a href="/chat.html" class="header__chat-btn" title="Чат">
                     <i class='bx bx-message-rounded-dots'></i>
@@ -42,10 +41,7 @@ class HeaderComponent {
                     <a href="/favorites.html" class="icon-btn" title="Избранное">
                         <i class='bx bx-heart'></i>
                     </a>
-                    <a href="/notifications.html" class="icon-btn" title="Уведомления">
-                        <i class='bx bx-bell'></i>
-                        <span class="badge">2</span>
-                    </a>
+                    <!-- Колокольчик удален -->
                     <a href="/create-listing.html" class="btn-create">
                         Разместить
                     </a>
@@ -68,7 +64,6 @@ class HeaderComponent {
                 </div>
             `;
         } else {
-            // ОБРАТИ ВНИМАНИЕ НА ССЫЛКИ ЗДЕСЬ
             rightSection = `
                 <div class="header__right">
                     <div class="header__auth-links">
@@ -101,13 +96,21 @@ class HeaderComponent {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Выход через API
                 fetch('/api/auth/logout', { method: 'POST' })
                     .then(() => {
                         localStorage.setItem('isLoggedIn', 'false');
                         localStorage.removeItem('user');
                         window.location.href = '/login.html';
                     });
+            });
+        }
+
+        const searchInput = document.getElementById('global-search');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    window.location.href = `/catalog.html?search=${encodeURIComponent(searchInput.value)}`;
+                }
             });
         }
     }
