@@ -1,11 +1,21 @@
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session); // Для хранения сессий в БД
+const pgSession = require('connect-pg-simple')(session);
 const { Pool } = require('pg');
+const http = require('http'); // <--- 1
+const { Server } = require('socket.io'); // <--- 2
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app); // <--- 3. Создаем HTTP сервер
+const io = new Server(server, {        // <--- 4. Инициализируем Socket.io
+    cors: {
+        origin: "*", // Разрешаем подключение с фронтенда
+        methods: ["GET", "POST"]
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 // DB Setup
@@ -21,10 +31,6 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
-
-
-// ВАЖНО: Раздача папки uploads по адресу /uploads
-// path.join(__dirname, 'uploads') гарантирует правильный абсолютный путь
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -43,16 +49,55 @@ app.use(session({
     }
 }));
 
+// --- SOCKET.IO LOGIC ---
+io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+
+    // Вход в комнату чата
+    socket.on('join_chat', (chatId) => {
+        socket.join(chatId);
+        console.log(`Socket ${socket.id} joined chat ${chatId}`);
+    });
+
+    // Отправка сообщения
+    socket.on('send_message', async (data) => {
+        // data = { chatId, senderId, content }
+        const { chatId, senderId, content } = data;
+
+        try {
+            // Сохраняем в БД
+            const result = await pool.query(
+                'INSERT INTO messages (chat_id, sender_id, content) VALUES ($1, $2, $3) RETURNING *',
+                [chatId, senderId, content]
+            );
+            
+            const savedMsg = result.rows[0];
+
+            // Отправляем всем в комнате (включая отправителя, чтобы подтвердить)
+            io.to(chatId).emit('receive_message', savedMsg);
+            
+        } catch (err) {
+            console.error('Ошибка сохранения сообщения:', err);
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+});
+
 // Routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const listingRoutes = require('./routes/listings');
 const favoriteRoutes = require('./routes/favorites');
+const chatRoutes = require('./routes/chats');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/favorites', favoriteRoutes);
+app.use('/api/chats', chatRoutes);
 
 // Test Route
 app.get('/api/health', async (req, res) => {
@@ -69,6 +114,6 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

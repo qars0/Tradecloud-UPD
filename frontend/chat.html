@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сообщения - TradeCloud</title>
+    <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/components/header.css">
+    <link rel="stylesheet" href="src/css/pages/chat.css">
+</head>
+<body>
+
+    <div id="header-container"></div>
+
+    <div class="chat-layout">
+        <!-- Список чатов -->
+        <aside class="chat-sidebar">
+            <div class="chat-search">
+                <input type="text" placeholder="Поиск чатов..." style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;">
+            </div>
+            <div class="chat-list" id="chat-list">
+                <div style="text-align:center; padding:20px; color:#999">Загрузка...</div>
+            </div>
+        </aside>
+
+        <!-- Окно переписки -->
+        <section class="chat-main">
+            <!-- Состояние: чат не выбран -->
+            <div id="no-chat-screen" class="no-chat-selected">
+                <i class='bx bx-message-square-dots'></i>
+                <h3>Выберите чат</h3>
+                <p>чтобы начать общение</p>
+            </div>
+
+            <!-- Состояние: активный чат (скрыто по умолчанию) -->
+            <div id="active-chat-screen" style="display:none; height:100%; flex-direction:column;">
+                
+                <header class="chat-header">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="" id="chat-header-avatar" class="chat-avatar">
+                        <div>
+                            <div id="chat-header-name" style="font-weight:600">...</div>
+                            <div style="font-size:12px; color:#2ecc71">Онлайн</div>
+                        </div>
+                    </div>
+                    
+                    <a href="#" id="chat-listing-link" class="chat-product-link">
+                        <i class='bx bx-purchase-tag'></i> 
+                        <span id="chat-listing-title">Товар</span>
+                    </a>
+                </header>
+
+                <div class="messages-area" id="messages-area">
+                    <!-- Сообщения будут здесь -->
+                </div>
+
+                <div class="chat-input-area">
+                    <form class="input-form" id="msg-form">
+                        <input type="text" class="chat-input" id="msg-input" placeholder="Напишите сообщение..." autocomplete="off">
+                        <button type="submit" class="btn-send"><i class='bx bxs-send'></i></button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ВАЖНО: Подключаем библиотеку socket.io -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="src/js/components/header.js"></script>
+    <script src="src/js/pages/chat.js"></script>
+</body>
+</html>

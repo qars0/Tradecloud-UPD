@@ -360,3 +360,37 @@ function setupPhoneButton(data) {
         }
     };
 }
+
+// Логика кнопки "Написать сообщение"
+const writeBtn = document.getElementById('btn-write-msg'); // Добавь этот ID в HTML!
+if (writeBtn) {
+    writeBtn.onclick = async () => {
+        if (!localStorage.getItem('isLoggedIn')) {
+            window.location.href = '/login.html';
+            return;
+        }
+
+        try {
+            // Создаем чат через API
+            const res = await fetch('/api/chats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    listing_id: currentListing.id, 
+                    seller_id: currentListing.user_id 
+                })
+            });
+
+            const data = await res.json();
+            
+            if (res.ok) {
+                // Переходим в чат
+                window.location.href = `/chat.html?chat_id=${data.id}`;
+            } else {
+                alert(data.message); // Например "Нельзя писать самому себе"
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+}
