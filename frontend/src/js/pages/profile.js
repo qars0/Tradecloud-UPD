@@ -1,17 +1,13 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Получаем данные о себе (кто сейчас залогинен?)
     let currentUser = null;
     try {
-        const res = await fetch('/api/user/me');
-        if (res.ok) currentUser = await res.json();
-    } catch (e) {}
+        const userRes = await fetch('/api/user/me');
+        if (userRes.ok) currentUser = await userRes.json();
+    } catch (e) { console.error("Ошибка проверки авторизации:", e); }
 
-    // 2. Чей профиль смотрим?
     const urlParams = new URLSearchParams(window.location.search);
     const urlId = urlParams.get('id');
 
-    // Если ID в URL нет, или он совпадает с моим -> Режим ВЛАДЕЛЬЦА
-    // Если ID есть и он чужой -> Режим ГОСТЯ
     let targetId = urlId;
     let isOwner = false;
 
@@ -20,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             targetId = currentUser.id;
             isOwner = true;
         } else {
-            window.location.href = '/login.html'; // Не залогинен и не указан ID
+            window.location.href = '/login.html';
             return;
         }
     } else {
@@ -29,88 +25,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 3. Загружаем данные профиля
     await loadProfileData(targetId, isOwner);
-    
-    // 4. Загружаем табы (объявления и отзывы)
     loadListings(targetId);
     loadReviews(targetId);
-    
-    // 5. Инициализация UI
     setupTabs();
     
     if (isOwner) {
-        setupOwnerFeatures(targetId); // Настройки, загрузка аватара
+        setupOwnerFeatures();
     } else {
-        setupGuestFeatures(targetId, currentUser); // Кнопки написать/отзыв
+        setupGuestFeatures(targetId, currentUser);
     }
 });
 
-// --- ЗАГРУЗКА ДАННЫХ ---
 async function loadProfileData(userId, isOwner) {
     try {
-        // Используем публичный endpoint для всех, кроме владельца (там расширенный)
         const endpoint = isOwner ? '/api/user/me' : `/api/user/${userId}`;
         const res = await fetch(endpoint);
-        
-        if (!res.ok) {
-            document.body.innerHTML = '<h1 style="text-align:center;margin-top:50px">Пользователь не найден</h1>';
-            return;
-        }
-
+        if (!res.ok) throw new Error("User not found");
         const user = await res.json();
 
-        // Заполнение UI
-        document.getElementById('profile-name').innerText = user.full_name || user.username;
+        // Если full_name есть в базе - берем его, иначе логин
+        const nameToDisplay = user.full_name || user.username;
+        document.getElementById('profile-name').innerText = nameToDisplay;
         document.getElementById('profile-login').innerText = `@${user.username}`;
         document.getElementById('stat-rating').innerText = user.rating || '0.0';
-        if(user.avatar_url) document.getElementById('profile-avatar').src = user.avatar_url;
+        
+        if(user.avatar_url) {
+            document.getElementById('profile-avatar').src = user.avatar_url;
+        }
         
         const date = new Date(user.created_at);
         document.getElementById('join-date').innerText = date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 
-        // Если владелец - заполняем форму настроек
+        // ИСПРАВЛЕНИЕ: Заполнение настроек
         if (isOwner) {
-            document.getElementById('set-fullname').value = user.full_name || '';
-            document.getElementById('set-username').value = user.username || '';
-            document.getElementById('set-email').value = user.email || '';
-            document.getElementById('set-phone').value = user.phone || '';
-        }
+            const setFullname = document.getElementById('set-fullname');
+            const setUsername = document.getElementById('set-username');
+            const setEmail = document.getElementById('set-email');
+            const setPhone = document.getElementById('set-phone');
 
+            if(setFullname) setFullname.value = user.full_name || '';
+            if(setUsername) setUsername.value = user.username || '';
+            if(setEmail) setEmail.value = user.email || '';
+            if(setPhone) setPhone.value = user.phone || '';
+        }
     } catch (err) {
         console.error(err);
     }
 }
 
-// --- ОБЪЯВЛЕНИЯ ---
-async function loadListings(userId) {
-    const container = document.getElementById('listings-grid');
-    container.innerHTML = '<div class="empty-state">Загрузка...</div>';
-
-    try {
-        const res = await fetch(`/api/listings?user_id=${userId}`);
-        const listings = await res.json();
-
-        container.innerHTML = '';
-        if(listings.length === 0) {
-            container.innerHTML = '<div class="empty-state">Нет активных объявлений</div>';
-            document.getElementById('stat-listings').innerText = '0';
-            return;
-        }
-
-        document.getElementById('stat-listings').innerText = listings.length;
-
-        // Считаем проданные
-        const soldCount = listings.filter(i => i.status === 'sold').length;
-        document.getElementById('stat-sales').innerText = soldCount;
-
-        listings.forEach(item => {
-            container.innerHTML += renderCard(item);
-        });
-    } catch(e) { container.innerHTML = 'Ошибка'; }
-}
-
-// --- ОТЗЫВЫ ---
 async function loadReviews(userId) {
     const container = document.getElementById('reviews-container');
     try {
@@ -125,120 +88,125 @@ async function loadReviews(userId) {
 
         reviews.forEach(review => {
             let stars = '';
-            for(let i=1; i<=5; i++) stars += i <= review.rating ? "<i class='bx bxs-star'></i>" : "<i class='bx bx-star'></i>";
+            for(let i=1; i<=5; i++) {
+                stars += i <= review.rating ? "<i class='bx bxs-star' style='color:#FF9500'></i>" : "<i class='bx bx-star' style='color:#ddd'></i>";
+            }
             
+            // ДОБАВЛЕНИЕ: Форматирование даты и времени
+            const dateObj = new Date(review.created_at);
+            const formattedDate = dateObj.toLocaleDateString('ru-RU') + ' в ' + dateObj.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+
             const html = `
                 <div class="review-card">
                     <div class="review-avatar-box">
-                        <img src="${review.avatar_url || 'https://via.placeholder.com/50'}" class="review-avatar">
+                        <img src="${review.avatar_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="review-avatar">
                     </div>
                     <div class="review-content">
                         <div class="review-header">
-                            <div class="review-author-name">${review.full_name || review.username}</div>
-                            <div class="review-stars-display">${stars}</div>
+                            <div>
+                                <div class="review-author-name">${review.full_name || review.username}</div>
+                                <div class="review-stars-display">${stars}</div>
+                            </div>
+                            <div class="review-date">${formattedDate}</div>
                         </div>
                         <div class="review-text">${review.comment}</div>
                     </div>
                 </div>`;
             container.innerHTML += html;
         });
-    } catch(e) {}
+    } catch(e) { console.error(e); }
 }
 
-// --- UI ФУНКЦИИ ---
+async function loadListings(userId) {
+    const container = document.getElementById('listings-grid');
+    try {
+        const res = await fetch(`/api/listings?user_id=${userId}`);
+        const listings = await res.json();
+        container.innerHTML = '';
+        if(listings.length === 0) {
+            container.innerHTML = '<div class="empty-state">Нет активных объявлений</div>';
+            return;
+        }
+        document.getElementById('stat-listings').innerText = listings.length;
+        const soldCount = listings.filter(i => i.status === 'sold').length;
+        document.getElementById('stat-sales').innerText = soldCount;
+
+        listings.forEach(item => {
+            container.innerHTML += renderCard(item);
+        });
+    } catch(e) { console.error(e); }
+}
+
 function setupTabs() {
     const tabs = document.querySelectorAll('.tab-link');
     const panes = document.querySelectorAll('.tab-pane');
-
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             tabs.forEach(t => t.classList.remove('active'));
             panes.forEach(p => p.classList.remove('active'));
-            
             tab.classList.add('active');
             document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
         });
     });
 }
 
-// --- ФУНКЦИИ ВЛАДЕЛЬЦА ---
-function setupOwnerFeatures(userId) {
-    const actions = document.getElementById('profile-actions');
-    
-    // Кнопка выхода (для мобильных или удобства)
-    actions.innerHTML = `
+function setupOwnerFeatures() {
+    document.getElementById('avatar-edit-btn').style.display = 'flex';
+    document.getElementById('tab-btn-settings').style.display = 'block';
+    document.getElementById('profile-actions').innerHTML = `
         <button onclick="location.href='/create-listing.html'" class="btn-profile-primary">
             <i class='bx bx-plus'></i> Добавить товар
         </button>
     `;
 
-    // Показываем кнопку смены аватара
-    document.getElementById('avatar-edit-btn').style.display = 'flex';
-    
-    // Показываем таб настроек
-    document.getElementById('tab-btn-settings').style.display = 'block';
-
-    // Логика загрузки аватара
-    const fileInput = document.getElementById('avatar-input');
-    fileInput.onchange = async () => {
-        if(fileInput.files.length === 0) return;
+    document.getElementById('avatar-input').onchange = async (e) => {
+        if(e.target.files.length === 0) return;
         const formData = new FormData();
-        formData.append('avatar', fileInput.files[0]);
-        await fetch('/api/user/update', { method: 'PUT', body: formData });
-        location.reload();
+        formData.append('avatar', e.target.files[0]);
+        const res = await fetch('/api/user/update', { method: 'PUT', body: formData });
+        if(res.ok) location.reload();
     };
 
-    // Логика сохранения настроек
     document.getElementById('settings-form').onsubmit = async (e) => {
         e.preventDefault();
         const fd = new FormData(e.target);
-        await fetch('/api/user/update', { method: 'PUT', body: fd });
-        alert('Сохранено');
-        location.reload();
+        const data = Object.fromEntries(fd.entries());
+        
+        const res = await fetch('/api/user/update', { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if(res.ok) {
+            alert('Данные обновлены!');
+            location.reload();
+        }
     };
 }
 
-// --- ФУНКЦИИ ГОСТЯ ---
 function setupGuestFeatures(targetId, currentUser) {
-    const actions = document.getElementById('profile-actions');
-    
-    // Кнопки "Написать" и "Отзыв"
-    actions.innerHTML = `
-        <button id="btn-write" class="btn-profile-primary">
-            <i class='bx bx-message-rounded-dots'></i> Написать
-        </button>
-        <button id="btn-review" class="btn-profile-secondary">
-            <i class='bx bx-star'></i> Оставить отзыв
-        </button>
+    document.getElementById('profile-actions').innerHTML = `
+        <button id="btn-write" class="btn-profile-primary"><i class='bx bx-message-rounded-dots'></i> Написать</button>
+        <button id="btn-review" class="btn-profile-secondary"><i class='bx bx-star'></i> Оставить отзыв</button>
     `;
 
-    // Логика "Написать"
-    document.getElementById('btn-write').onclick = async () => {
+    document.getElementById('btn-write').onclick = () => {
         if (!currentUser) return location.href = '/login.html';
-        
-        // Находим любой товар этого юзера для контекста
-        // Упрощенно: если нет товаров, не даем создать. Или создаем без товара (если бэкенд позволит)
-        // Для твоего бэкенда нужен listing_id.
-        // Здесь можно дописать логику: взять последний товар из загруженного списка.
-        const listings = document.querySelectorAll('.card'); // Грубый способ
-        // Но лучше использовать глобальную переменную (если сохраняли) или просто редирект
-        alert('Чтобы написать, перейдите на страницу товара этого пользователя'); 
-        // Или редирект на /chat.html если бэкенд поддерживает чат без товара (пока нет)
+        alert('Перейдите к любому объявлению пользователя, чтобы начать чат.');
     };
 
-    // Логика "Отзыв"
     const modal = document.getElementById('review-modal');
     document.getElementById('btn-review').onclick = () => {
         if (!currentUser) return location.href = '/login.html';
-        modal.style.display = 'flex'; setTimeout(()=>modal.classList.add('open'),10);
-    };
-    
-    // Закрытие модалки
-    document.getElementById('close-modal').onclick = () => {
-        modal.classList.remove('open'); setTimeout(()=>modal.style.display='none',300);
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('open'), 10);
     };
 
-    // Отправка отзыва
+    document.getElementById('close-modal').onclick = () => {
+        modal.classList.remove('open');
+        setTimeout(() => modal.style.display = 'none', 400);
+    };
+
     document.getElementById('review-form').onsubmit = async (e) => {
         e.preventDefault();
         const fd = new FormData(e.target);
@@ -248,6 +216,6 @@ function setupGuestFeatures(targetId, currentUser) {
             body: JSON.stringify({ target_id: targetId, rating: fd.get('rating'), comment: fd.get('comment') })
         });
         if(res.ok) location.reload();
-        else alert('Ошибка');
+        else alert('Ошибка публикации отзыва');
     };
 }

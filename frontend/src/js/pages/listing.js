@@ -128,7 +128,7 @@ function renderInfo(data) {
     if (data.author_avatar) document.getElementById('seller-ava').src = data.author_avatar;
     
     document.getElementById('seller-link').onclick = () => {
-        window.location.href = `/public-profile.html?id=${data.user_id}`;
+        window.location.href = `/profile.html?id=${data.user_id}`;
     };
 
     // Кнопка избранного
