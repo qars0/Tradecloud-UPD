@@ -226,7 +226,7 @@ exports.getListingById = async (req, res) => {
 
         // 2. Получаем картинки
         const imagesRes = await pool.query(
-            'SELECT image_url FROM listing_images WHERE listing_id = $1 ORDER BY is_main DESC',
+            'SELECT id, image_url FROM listing_images WHERE listing_id = $1 ORDER BY is_main DESC',
             [listingId]
         );
         listing.images = imagesRes.rows;
@@ -376,5 +376,88 @@ exports.reportListing = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Ошибка отправки жалобы' });
+    }
+};
+
+// Обновить объявление
+exports.updateListing = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ message: 'Нет авторизации' });
+
+    const listingId = req.params.id;
+    const userId = req.session.user.id;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        // 1. Проверка прав
+        const check = await client.query('SELECT user_id FROM listings WHERE id = $1', [listingId]);
+        if (check.rows.length === 0) throw new Error('Не найдено');
+        if (check.rows[0].user_id !== userId) throw new Error('Нет прав');
+
+        // 2. Обновление полей
+        const { 
+            title, description, price, category_id, 
+            price_unit, is_price_from 
+            // Тип (type) и параметры аукциона обычно не меняют на лету, чтобы не ломать логику, 
+            // но для простоты обновим только основные текстовые поля и цену.
+        } = req.body;
+
+        const updateQuery = `
+            UPDATE listings 
+            SET title = $1, description = $2, price = $3, category_id = $4,
+                price_unit = $5, is_price_from = $6
+            WHERE id = $7
+        `;
+
+        await client.query(updateQuery, [
+            title, description, price, category_id, 
+            price_unit, is_price_from || false, 
+            listingId
+        ]);
+
+        // 3. Добавление НОВЫХ картинок (если загрузили)
+        if (req.files && req.files.length > 0) {
+            const insertImageQuery = `INSERT INTO listing_images (listing_id, image_url, is_main) VALUES ($1, $2, $3)`;
+            for (let i = 0; i < req.files.length; i++) {
+                const imageUrl = `/uploads/${req.files[i].filename}`;
+                // is_main = false, так как главная уже есть (или юзер сам удалит старую)
+                await client.query(insertImageQuery, [listingId, imageUrl, false]);
+            }
+        }
+
+        await client.query('COMMIT');
+        res.json({ message: 'Объявление обновлено' });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ message: err.message || 'Ошибка сервера' });
+    } finally {
+        client.release();
+    }
+};
+
+// Удалить конкретную картинку
+exports.deleteListingImage = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ message: 'Нет авторизации' });
+    
+    const { id, imageId } = req.params; // id объявления, imageId картинки
+    const userId = req.session.user.id;
+
+    try {
+        // Проверяем, принадлежит ли объявление юзеру
+        const check = await pool.query('SELECT user_id FROM listings WHERE id = $1', [id]);
+        if (check.rows.length === 0 || check.rows[0].user_id !== userId) {
+            return res.status(403).json({ message: 'Нет прав' });
+        }
+
+        // Удаляем картинку
+        await pool.query('DELETE FROM listing_images WHERE id = $1 AND listing_id = $2', [imageId, id]);
+        
+        res.json({ message: 'Картинка удалена' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка удаления картинки' });
     }
 };

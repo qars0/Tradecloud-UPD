@@ -27,4 +27,8 @@ router.put('/:id/status', listingController.updateStatus); // Обновить �
 
 router.post('/report', listingController.reportListing);
 
+router.put('/:id', upload.array('images', 5), listingController.updateListing); // Обновить
+
+router.delete('/:id/images/:imageId', listingController.deleteListingImage); // Удалить картинку
+
 module.exports = router;

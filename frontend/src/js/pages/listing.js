@@ -294,8 +294,20 @@ function setupActionButtons(data) {
 function checkOwner(data) {
     if (currentUser && currentUser.id === data.user_id) {
         document.getElementById('owner-controls').style.display = 'block';
-        document.getElementById('standard-actions').style.display = 'none'; // Скрываем кнопки покупки для себя
+        document.getElementById('standard-actions').style.display = 'none';
         
+        // --- ДОБАВЛЕНА КНОПКА РЕДАКТИРОВАТЬ ---
+        // Создаем кнопку динамически или добавь её в HTML заранее
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'btn-secondary-action';
+        btnEdit.style.width = '100%';
+        btnEdit.style.marginBottom = '10px';
+        btnEdit.innerHTML = `<i class='bx bx-edit'></i> Редактировать`;
+        btnEdit.onclick = () => window.location.href = `/edit-listing.html?id=${data.id}`;
+        
+        // Вставляем её первой в action-btn-group
+        const group = document.querySelector('#owner-controls .action-btn-group');
+        group.insertBefore(btnEdit, group.firstChild);
         // Удаление
         document.getElementById('btn-delete').onclick = async () => {
             if(confirm('Удалить навсегда?')) {
