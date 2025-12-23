@@ -3,49 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud - Студенческий Маркетплейс</title>
+    <title>TradeCloud - Главная</title>
     <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="src/css/main.css">
     <link rel="stylesheet" href="src/css/components/header.css">
-    <link rel="stylesheet" href="src/css/components/cards.css"> <!-- Стили карточек -->
+    <link rel="stylesheet" href="src/css/components/cards.css">
+    <link rel="stylesheet" href="src/css/pages/home.css"> <!-- Новый файл -->
 </head>
 <body>
 
     <div id="header-container"></div>
 
-    <main style="max-width: 1200px; margin: 0 auto; padding: 30px 20px;">
+    <main style="max-width: 1320px; margin: 40px auto; padding: 0 20px;">
         
-        <!-- Герой-блок (Приветствие) -->
-        <section style="text-align: center; margin-bottom: 60px; padding: 60px 20px; background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%); border-radius: 30px;">
-            <h1 style="font-size: 3rem; margin-bottom: 15px; color: var(--text-dark);">
-                Покупай и продавай <span style="color: var(--primary-color);">легко</span>
-            </h1>
-            <p style="font-size: 1.2rem; color: var(--text-light); margin-bottom: 30px;">
-                Безопасная площадка для студентов твоего вуза
-            </p>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <a href="/create-listing.html" class="btn-create" style="padding: 15px 30px; font-size: 18px;">
-                    <i class='bx bx-plus'></i> Разместить объявление
-                </a>
-                <a href="/catalog.html" class="btn-catalog" style="padding: 15px 30px; font-size: 18px; background: white; color: var(--text-dark); border: 1px solid #ddd;">
-                    Смотреть каталог
-                </a>
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Найди что <span>нужно</span>,<br>
+                    продай что <span>не нужно</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Безопасная площадка. Гаджеты, услуги репетиторов и аренда вещей — всё в одном месте.
+                </p>
+                <div class="hero-btns">
+                    <a href="/catalog.html" class="btn-hero-primary">Перейти в каталог</a>
+                    <a href="/create-listing.html" class="btn-hero-secondary">
+                        <i class='bx bx-plus'></i> Разместить
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-visual" id="hero-cards-container">
+                <!-- Карточки загрузятся JS-ом -->
+                <!-- Фолбек (скелет) на случай долгой загрузки -->
+                <div class="floating-card" style="--rot: -10deg; opacity: 0.5;"></div>
+                <div class="floating-card" style="--rot: 5deg; opacity: 0.5;"></div>
+                <div class="floating-card" style="--rot: 12deg; opacity: 0.5;"></div>
             </div>
         </section>
 
-        <!-- Свежие объявления -->
+        <!-- CATEGORIES -->
         <section>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
-                <h2 style="font-size: 24px;">🔥 Свежие предложения</h2>
-                <a href="/catalog.html" style="text-decoration: none; color: var(--primary-color); font-weight: 500;">
-                    Смотреть все <i class='bx bx-right-arrow-alt'></i>
+            <div class="section-header">
+                <h2 class="section-title">Категории</h2>
+                <a href="/catalog.html" style="color: var(--primary-color); font-weight: 500; text-decoration: none;">
+                    Все категории <i class='bx bx-right-arrow-alt'></i>
                 </a>
             </div>
+            
+            <div class="categories-grid" id="categories-container">
+                <!-- JS вставит категории -->
+                <div style="grid-column: 1/-1; text-align: center;">Загрузка...</div>
+            </div>
+        </section>
 
-            <!-- Сюда JS загрузит карточки -->
+        <!-- FRESH LISTINGS -->
+        <section class="listings-section">
+            <div class="section-header">
+                <h2 class="section-title">🔥 Свежие предложения</h2>
+            </div>
+
             <div id="fresh-listings" class="listings-grid">
-                <!-- Лоадер -->
                 <div class="empty-state">Загрузка...</div>
             </div>
         </section>
@@ -54,32 +74,6 @@
 
     <script src="src/js/components/header.js"></script>
     <script src="src/js/components/card-renderer.js"></script>
-    <script>
-        // Простой скрипт прямо в HTML для скорости, или вынеси в src/js/pages/home.js
-        document.addEventListener('DOMContentLoaded', async () => {
-            const container = document.getElementById('fresh-listings');
-            
-            try {
-                // Запрашиваем 8 последних объявлений
-                const res = await fetch('/api/listings?limit=8');
-                const listings = await res.json();
-
-                container.innerHTML = '';
-
-                if (listings.length === 0) {
-                    container.innerHTML = '<div class="empty-state">Пока нет объявлений</div>';
-                    return;
-                }
-
-                listings.forEach(item => {
-                    container.innerHTML += renderCard(item);
-                });
-
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
-            }
-        });
-    </script>
+    <script src="src/js/pages/home.js"></script> <!-- Новый скрипт -->
 </body>
 </html>
