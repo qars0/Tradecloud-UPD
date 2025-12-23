@@ -1,0 +1,252 @@
+.catalog-container {
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+/* --- САЙДБАР ФИЛЬТРОВ --- */
+.filters-sidebar {
+    width: 300px;
+    background: rgba(255, 255, 255, 0.7); /* Полупрозрачный белый */
+    backdrop-filter: blur(20px); /* Эффект матового стекла */
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    position: sticky;
+    top: 100px; /* Чтобы не уезжал при скролле */
+    transition: transform 0.3s ease;
+}
+
+.filter-group {
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding-bottom: 20px;
+}
+
+.filter-group:last-child {
+    border-bottom: none;
+}
+
+.filter-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-dark);
+}
+
+/* Красивые чекбоксы (Чипсы) */
+.chips-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-chip {
+    cursor: pointer;
+    user-select: none;
+}
+
+.filter-chip input {
+    display: none;
+}
+
+.chip-content {
+    padding: 8px 16px;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-chip input:checked + .chip-content {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(58, 134, 255, 0.3);
+}
+
+/* Поля цены */
+.price-inputs {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.price-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: white;
+    outline: none;
+    font-family: var(--font-family);
+    transition: 0.2s;
+}
+
+.price-field:focus {
+    border-color: var(--primary-color);
+}
+
+/* Кнопки */
+.btn-apply {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-apply:hover {
+    background: #2b6cb0;
+}
+
+.btn-reset {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-reset:hover {
+    color: var(--danger-color);
+}
+
+/* --- ОСНОВНАЯ ЧАСТЬ --- */
+.catalog-main {
+    flex: 1;
+}
+
+.catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 15px 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.search-bar {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+}
+
+.search-bar i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 15px 12px 40px;
+    border: 1px solid #eee;
+    border-radius: 25px;
+    outline: none;
+    transition: 0.3s;
+    background: white;
+}
+
+.search-input:focus {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-color: var(--primary-color);
+}
+
+.sort-select {
+    padding: 10px 15px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    background: white;
+    outline: none;
+    cursor: pointer;
+    font-family: var(--font-family);
+}
+
+/* --- АНИМАЦИЯ ПОЯВЛЕНИЯ КАРТОЧЕК --- */
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+}
+
+/* Ключевая анимация: элементы выезжают снизу */
+.fade-up {
+    animation: fadeUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Адаптив: Кнопка фильтров для мобильных */
+.mobile-filter-btn {
+    display: none;
+    padding: 10px 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .catalog-container {
+        flex-direction: column;
+    }
+    
+    .filters-sidebar {
+        display: none; /* Скрываем по умолчанию */
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 2000;
+        background: white;
+        overflow-y: auto;
+    }
+
+    .filters-sidebar.active {
+        display: block;
+        animation: slideRight 0.3s ease;
+    }
+
+    .mobile-filter-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+}
+
+@keyframes slideRight {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}

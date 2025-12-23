@@ -89,18 +89,19 @@ exports.createListing = async (req, res) => {
 // Получить список объявлений (с фильтрами)
 exports.getListings = async (req, res) => {
     try {
-        const { user_id, limit } = req.query;
-        // Получаем ID текущего юзера из сессии (если он вошел)
+        const { 
+            user_id, limit, 
+            search, category_id, type, 
+            min_price, max_price, sort 
+        } = req.query;
+        
         const currentUserId = req.session.user ? req.session.user.id : null;
 
         let query = `
             SELECT 
                 l.*, 
-                u.username, 
-                u.full_name,
-                u.avatar_url as author_avatar,
+                u.username, u.full_name, u.avatar_url as author_avatar,
                 img.image_url,
-                -- Магия SQL: Проверяем наличие в таблице favorites
                 (CASE WHEN f.user_id IS NOT NULL THEN TRUE ELSE FALSE END) as is_favorite
             FROM listings l
             JOIN users u ON l.user_id = u.id
@@ -108,23 +109,47 @@ exports.getListings = async (req, res) => {
             LEFT JOIN favorites f ON l.id = f.listing_id AND f.user_id = $1
         `;
 
-        // $1 - это currentUserId. Следующие параметры пойдут с индекса 2
         const values = [currentUserId]; 
-        const conditions = [];
+        const conditions = ['l.status = \'active\'']; // Показываем только активные
 
-        // Фильтр по пользователю (для профиля)
+        // --- Фильтры ---
         if (user_id) {
             conditions.push(`l.user_id = $${values.length + 1}`);
             values.push(user_id);
         }
+        if (category_id) {
+            conditions.push(`l.category_id = $${values.length + 1}`);
+            values.push(category_id);
+        }
+        if (type) {
+            conditions.push(`l.type = $${values.length + 1}`);
+            values.push(type);
+        }
+        if (search) {
+            conditions.push(`(l.title ILIKE $${values.length + 1} OR l.description ILIKE $${values.length + 1})`);
+            values.push(`%${search}%`);
+        }
+        if (min_price) {
+            conditions.push(`l.price >= $${values.length + 1}`);
+            values.push(min_price);
+        }
+        if (max_price) {
+            conditions.push(`l.price <= $${values.length + 1}`);
+            values.push(max_price);
+        }
 
-        // Добавляем WHERE, если есть условия
         if (conditions.length > 0) {
             query += ' WHERE ' + conditions.join(' AND ');
         }
 
-        // Сортировка (по умолчанию новые сверху)
-        query += ' ORDER BY l.created_at DESC';
+        // --- Сортировка ---
+        if (sort === 'cheap') {
+            query += ' ORDER BY l.price ASC';
+        } else if (sort === 'expensive') {
+            query += ' ORDER BY l.price DESC';
+        } else {
+            query += ' ORDER BY l.created_at DESC'; // По умолчанию новые
+        }
 
         if (limit) {
             query += ` LIMIT ${parseInt(limit) || 20}`;
@@ -132,7 +157,6 @@ exports.getListings = async (req, res) => {
 
         const result = await pool.query(query, values);
 
-        // Форматируем ответ (собираем images в массив, чтобы фронтенд понимал формат)
         const listings = result.rows.map(row => ({
             id: row.id,
             title: row.title,
@@ -145,16 +169,16 @@ exports.getListings = async (req, res) => {
             full_name: row.full_name,
             price_unit: row.price_unit,
             is_price_from: row.is_price_from,
+            auction_start_price: row.auction_start_price,
             images: row.image_url ? [{ image_url: row.image_url }] : [],
-            
-            is_favorite: row.is_favorite // <--- Передаем на фронтенд
+            is_favorite: row.is_favorite
         }));
 
         res.json(listings);
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Ошибка получения списка' });
+        res.status(500).json({ message: 'Ошибка фильтрации' });
     }
 };
 
