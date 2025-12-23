@@ -265,6 +265,24 @@ function setupReviewModal(targetUserId) {
         const rating = formData.get('rating');
         const comment = formData.get('comment');
 
+        if (openBtn) {
+            openBtn.onclick = () => {
+                modal.style.display = 'flex'; // Сначала показываем
+                setTimeout(() => {
+                    modal.classList.add('open'); // Затем запускаем анимацию через класс
+                }, 10);
+            };
+        }
+
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                modal.classList.remove('open');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300); // Время анимации из CSS
+            };
+        }
+
         try {
             const res = await fetch('/api/reviews', {
                 method: 'POST',

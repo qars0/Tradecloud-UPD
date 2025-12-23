@@ -105,24 +105,32 @@
     <div class="modal-overlay" id="review-modal">
         <div class="modal-window">
             <i class='bx bx-x modal-close' id="close-modal"></i>
-            <h2 class="modal-title">Оценить пользователя</h2>
+            <h2 class="modal-title">Написать отзыв</h2>
             
             <form id="review-form">
-                <!-- Звезды (порядок 5-4-3-2-1 из-за row-reverse) -->
                 <div class="star-rating">
-                    <input type="radio" id="star5" name="rating" value="5" required /><label for="star5" title="Отлично"><i class='bx bxs-star'></i></label>
-                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Хорошо"><i class='bx bxs-star'></i></label>
-                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="Нормально"><i class='bx bxs-star'></i></label>
-                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="Плохо"><i class='bx bxs-star'></i></label>
-                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="Ужасно"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star5" name="rating" value="5" required />
+                    <label for="star5"><i class='bx bxs-star'></i></label>
+                    
+                    <input type="radio" id="star4" name="rating" value="4" />
+                    <label for="star4"><i class='bx bxs-star'></i></label>
+                    
+                    <input type="radio" id="star3" name="rating" value="3" />
+                    <label for="star3"><i class='bx bxs-star'></i></label>
+                    
+                    <input type="radio" id="star2" name="rating" value="2" />
+                    <label for="star2"><i class='bx bxs-star'></i></label>
+                    
+                    <input type="radio" id="star1" name="rating" value="1" />
+                    <label for="star1"><i class='bx bxs-star'></i></label>
                 </div>
 
                 <div class="input-group">
-                    <label>Ваш комментарий</label>
-                    <textarea class="custom-textarea" name="comment" placeholder="Расскажите, как прошла сделка..." style="min-height: 100px;"></textarea>
+                    <label>Ваше впечатление</label>
+                    <textarea name="comment" rows="4" placeholder="Напишите, что вам понравилось..."></textarea>
                 </div>
 
-                <button type="submit" class="btn-apply" style="margin-top: 20px; width: 100%;">Опубликовать отзыв</button>
+                <button type="submit" class="btn-submit-review">Опубликовать</button>
             </form>
         </div>
     </div>
