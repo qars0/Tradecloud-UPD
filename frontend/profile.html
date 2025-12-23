@@ -3,142 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой Профиль - TradeCloud</title>
+    <title>Профиль - TradeCloud</title>
     <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="src/css/main.css">
     <link rel="stylesheet" href="src/css/components/header.css">
-    <link rel="stylesheet" href="src/css/pages/profile.css">
     <link rel="stylesheet" href="src/css/components/cards.css">
-    <link rel="stylesheet" href="src/css/pages/reviews.css">
+    <link rel="stylesheet" href="src/css/pages/reviews.css"> <!-- Для отзывов -->
+    <link rel="stylesheet" href="src/css/pages/profile.css"> <!-- Новый стиль -->
 </head>
 <body>
 
     <div id="header-container"></div>
 
-    <main class="main-container">
+    <!-- Декоративная обложка -->
+    <div class="profile-cover"></div>
+
+    <main class="profile-container">
         
-        <!-- Левая колонка: Карточка -->
-        <aside class="profile-card">
+        <!-- КАРТОЧКА ПОЛЬЗОВАТЕЛЯ -->
+        <aside class="user-card">
             <div class="avatar-wrapper">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" class="profile-avatar-large" id="profile-avatar-img">
-                <!-- Скрытый инпут для загрузки -->
-                <input type="file" id="avatar-upload" hidden accept="image/*">
-                <label for="avatar-upload" class="avatar-edit-btn" title="Изменить фото">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" class="user-avatar" id="profile-avatar">
+                
+                <!-- Кнопка смены аватара (Только для владельца) -->
+                <label for="avatar-input" class="avatar-edit-trigger" id="avatar-edit-btn">
                     <i class='bx bx-camera'></i>
                 </label>
+                <input type="file" id="avatar-input" hidden accept="image/*">
             </div>
 
-            <h1 class="profile-name" id="profile-name">Загрузка...</h1>
-            <div class="profile-status">
-                <span style="width: 8px; height: 8px; background: #2ecc71; border-radius: 50%; display: inline-block;"></span>
-                Онлайн
+            <h1 class="user-name" id="profile-name">Загрузка...</h1>
+            <div class="user-login" id="profile-login">@username</div>
+
+            <div class="user-stats">
+                <div class="stat-box">
+                    <span class="stat-num" id="stat-listings">0</span>
+                    <span class="stat-label">Товаров</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num" id="stat-rating">0.0</span>
+                    <span class="stat-label">Рейтинг</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num" id="stat-sales">0</span>
+                    <span class="stat-label">Сделок</span>
+                </div>
             </div>
 
-            <div class="rating-badge">
-                <i class='bx bxs-star'></i>
-                <span id="profile-rating">0.0</span>
+            <!-- Кнопки (динамические) -->
+            <div class="profile-actions" id="profile-actions">
+                <!-- Сюда JS вставит кнопки (Написать ИЛИ Редактировать) -->
             </div>
-
-            <div class="profile-stats">
-                <div class="stat-item">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Товаров</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Продаж</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="join-date">-</div>
-                    <div class="stat-label">На сайте</div>
-                </div>
+            
+            <div style="margin-top: 20px; font-size: 13px; color: #999;">
+                На сайте с <span id="join-date">...</span>
             </div>
         </aside>
 
-        <!-- Правая колонка: Табы и Контент -->
-        <section class="content-area">
-            
-            <!-- Меню вкладок -->
-            <div class="tabs-header">
-                <button class="tab-btn active" data-tab="listings">
-                    <i class='bx bx-grid-alt'></i> Объявления
-                </button>
-                <button class="tab-btn" data-tab="reviews">
-                    <i class='bx bx-comment-detail'></i> Отзывы
-                </button>
-                <button class="tab-btn" data-tab="settings">
-                    <i class='bx bx-cog'></i> Настройки
-                </button>
+        <!-- КОНТЕНТ (ТАБЫ) -->
+        <section class="content-section">
+            <div class="tabs-nav">
+                <button class="tab-link active" data-tab="listings">Объявления</button>
+                <button class="tab-link" data-tab="reviews">Отзывы</button>
+                <!-- Таб настроек только для владельца -->
+                <button class="tab-link" data-tab="settings" id="tab-btn-settings" style="display:none">Настройки</button>
             </div>
 
-            <!-- Вкладка 1: Объявления -->
-            <div class="tab-content active" id="tab-listings">
-                <div id="listings-container" class="listings-grid">
-                    <!-- JS сгенерирует здесь карточки. Пока заглушка -->
-                    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-light);">
-                        <i class='bx bx-ghost' style="font-size: 48px;"></i>
-                        <p>У вас пока нет активных объявлений</p>
-                        <a href="/create-listing.html" class="btn-create" style="display: inline-block; margin-top: 10px;">Создать первое</a>
-                    </div>
+            <!-- 1. Объявления -->
+            <div class="tab-pane active" id="tab-listings">
+                <div id="listings-grid" class="listings-grid">
+                    <div class="empty-state">Загрузка...</div>
                 </div>
             </div>
 
-            <!-- Вкладка 2: Отзывы -->
-            <div class="tab-content" id="tab-reviews">
+            <!-- 2. Отзывы -->
+            <div class="tab-pane" id="tab-reviews">
                 <div id="reviews-container">
-                    <!-- Заглушка отзывов (Для демонстрации дизайна) -->
-                    <div class="review-card">
-                        <img src="https://randomuser.me/api/portraits/men/32.jpg" class="review-avatar">
-                        <div style="flex: 1;">
-                            <div class="review-header">
-                                <span class="review-author">Иван Иванов</span>
-                                <div class="review-stars">
-                                    <i class='bx bxs-star'></i>
-                                    <i class='bx bxs-star'></i>
-                                    <i class='bx bxs-star'></i>
-                                    <i class='bx bxs-star'></i>
-                                    <i class='bx bxs-star'></i>
-                                </div>
-                            </div>
-                            <p style="color: #555; font-size: 14px;">Отличный продавец! Быстро отправил, товар соответствует описанию. Рекомендую!</p>
-                            <span style="color: #999; font-size: 12px; margin-top: 5px; display: block;">2 дня назад</span>
-                        </div>
-                    </div>
+                    <div class="empty-state">Отзывов пока нет</div>
                 </div>
             </div>
 
-            <!-- Вкладка 3: Настройки -->
-            <div class="tab-content" id="tab-settings">
-                <h2 style="margin-bottom: 20px;">Редактирование профиля</h2>
-                <form class="settings-form" id="settings-form">
-                    <div class="form-group">
-                        <label>Имя Фамилия (отображается в объявлениях)</label>
-                        <input type="text" class="form-control" name="full_name" id="input-fullname">
-                    </div>
-                    <div class="form-group">
-                        <label>Логин</label>
-                        <input type="text" class="form-control" name="username" id="input-username">
-                    </div>
-                    <div class="form-group">
-                        <label>Телефон</label>
-                        <input type="tel" class="form-control" name="phone" id="input-phone">
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" class="form-control" name="email" id="input-email">
-                    </div>
-                    <button type="submit" class="btn-catalog" style="border-radius: 10px; padding: 12px 30px;">
-                        Сохранить изменения
-                    </button>
-                    <p id="save-msg" style="margin-top: 10px; font-size: 14px;"></p>
-                </form>
+            <!-- 3. Настройки -->
+            <div class="tab-pane" id="tab-settings">
+                <div class="settings-box">
+                    <h2 style="margin-bottom:20px">Личные данные</h2>
+                    <form id="settings-form">
+                        <div class="settings-group">
+                            <label class="settings-label">Имя и Фамилия</label>
+                            <input type="text" name="full_name" id="set-fullname" class="settings-input">
+                        </div>
+                        <div class="settings-group">
+                            <label class="settings-label">Логин (username)</label>
+                            <input type="text" name="username" id="set-username" class="settings-input">
+                        </div>
+                        <div class="settings-group">
+                            <label class="settings-label">Email</label>
+                            <input type="email" name="email" id="set-email" class="settings-input">
+                        </div>
+                        <div class="settings-group">
+                            <label class="settings-label">Телефон</label>
+                            <input type="tel" name="phone" id="set-phone" class="settings-input">
+                        </div>
+                        <button type="submit" class="btn-profile-primary" style="width: 100%;">
+                            Сохранить изменения
+                        </button>
+                    </form>
+                </div>
             </div>
-
         </section>
     </main>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- Модалка отзыва (та же самая, что была) -->
+    <div class="modal-overlay" id="review-modal">
+        <div class="modal-window">
+            <i class='bx bx-x modal-close' id="close-modal"></i>
+            <h2 class="modal-title">Написать отзыв</h2>
+            <form id="review-form">
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required /><label for="star5"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2"><i class='bx bxs-star'></i></label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1"><i class='bx bxs-star'></i></label>
+                </div>
+                <div class="settings-group">
+                    <textarea name="comment" class="settings-input" placeholder="Комментарий..." style="min-height:100px"></textarea>
+                </div>
+                <button type="submit" class="btn-profile-primary" style="width:100%">Отправить</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="src/js/components/header.js"></script>
     <script src="src/js/components/card-renderer.js"></script>
     <script src="src/js/pages/profile.js"></script>
