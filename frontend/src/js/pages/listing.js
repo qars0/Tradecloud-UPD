@@ -389,7 +389,7 @@ function checkOwner(data) {
         btnEdit.style.width = '100%';
         btnEdit.style.marginBottom = '10px';
         btnEdit.innerHTML = `<i class='bx bx-edit'></i> Редактировать`;
-        btnEdit.onclick = () => window.location.href = `/edit-listing.html?id=${data.id}`;
+        btnEdit.onclick = () => window.location.href = `/listing-form.html?id=${data.id}`;
         
         // Вставляем её первой в action-btn-group
         const group = document.querySelector('#owner-controls .action-btn-group');

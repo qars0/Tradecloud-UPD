@@ -63,7 +63,7 @@ class HeaderComponent {
                 </div>
             </div>
 
-            <a href="/create-listing.html" class="btn-create-header"><i class='bx bx-plus'></i> Разместить</a>
+            <a href="/listing-form.html" class="btn-create-header"><i class='bx bx-plus'></i> Разместить</a>
             
             <div class="profile-dropdown">
                 <div class="profile-trigger">

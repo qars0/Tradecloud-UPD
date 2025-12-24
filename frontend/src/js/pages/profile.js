@@ -154,7 +154,7 @@ function setupOwnerFeatures() {
     document.getElementById('avatar-edit-btn').style.display = 'flex';
     document.getElementById('tab-btn-settings').style.display = 'block';
     document.getElementById('profile-actions').innerHTML = `
-        <button onclick="location.href='/create-listing.html'" class="btn-profile-primary">
+        <button onclick="location.href='/listing-form.html'" class="btn-profile-primary">
             <i class='bx bx-plus'></i> Добавить товар
         </button>
     `;
