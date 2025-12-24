@@ -9,37 +9,35 @@ async function loadHeroCards() {
     const container = document.getElementById('hero-cards-container');
     
     try {
-        // Берем 5 последних, из них возьмем 3 (или рандом)
         const res = await fetch('/api/listings?limit=5');
-        const listings = await res.json();
+        const result = await res.json();
+
+        // ИСПРАВЛЕНИЕ: Извлекаем массив из поля data
+        const listings = result.data || [];
 
         if (listings.length === 0) {
-            container.innerHTML = ''; // Пусто, если нет товаров
+            container.innerHTML = ''; 
             return;
         }
 
         // Берем первые 3
         const top3 = listings.slice(0, 3);
         
-        container.innerHTML = ''; // Очищаем скелет
+        container.innerHTML = ''; 
 
-        // Углы поворота для карточек
         const rotations = [-10, 5, 12];
 
         top3.forEach((item, index) => {
-            // Форматируем цену
             let priceText = Math.floor(item.price).toLocaleString() + ' ₽';
             if(item.type === 'auction') priceText = 'Аукцион';
 
-            // Картинка
-            const img = item.images[0]?.image_url || 'https://via.placeholder.com/260x160';
+            // ИСПРАВЛЕНИЕ: Проверяем и массив images, и прямое поле image_url (из подзапроса SQL)
+            const img = (item.images && item.images[0]?.image_url) || item.image_url || 'https://via.placeholder.com/260x160';
 
             const card = document.createElement('div');
             card.className = 'floating-card';
-            // Передаем переменную вращения в CSS
             card.style.setProperty('--rot', `${rotations[index]}deg`);
             
-            // Ссылка на товар
             card.onclick = () => location.href = `/listing.html?id=${item.id}`;
             card.style.cursor = 'pointer';
 
@@ -57,7 +55,7 @@ async function loadHeroCards() {
     }
 }
 
-// 2. Загрузка категорий
+// 2. Загрузка категорий (без изменений)
 async function loadCategories() {
     const container = document.getElementById('categories-container');
     try {
@@ -65,7 +63,6 @@ async function loadCategories() {
         const cats = await res.json();
 
         container.innerHTML = '';
-
         cats.forEach(cat => {
             container.innerHTML += `
                 <a href="/catalog.html?category_id=${cat.id}" class="cat-card">
@@ -76,7 +73,6 @@ async function loadCategories() {
                 </a>
             `;
         });
-
     } catch (err) {
         console.error(err);
     }
@@ -87,7 +83,10 @@ async function loadFreshListings() {
     const container = document.getElementById('fresh-listings');
     try {
         const res = await fetch('/api/listings?limit=8');
-        const listings = await res.json();
+        const result = await res.json();
+
+        // ИСПРАВЛЕНИЕ: Извлекаем массив из поля data
+        const listings = result.data || [];
 
         container.innerHTML = '';
 
@@ -102,16 +101,13 @@ async function loadFreshListings() {
         }
 
         listings.forEach((item, index) => {
-            // Используем общий рендерер, но добавляем анимацию
             const html = renderCard(item);
-            
             const wrapper = document.createElement('div');
             wrapper.innerHTML = html;
             const card = wrapper.firstElementChild;
             
-            // Анимация появления
             card.style.animation = `fadeInUp 0.6s ease forwards ${index * 0.1}s`;
-            card.style.opacity = '0'; // Начальное состояние для анимации
+            card.style.opacity = '0'; 
             
             container.appendChild(card);
         });
@@ -121,7 +117,7 @@ async function loadFreshListings() {
     }
 }
 
-// Добавляем keyframe для анимации JS-ом (или можно в CSS)
+// Keyframes
 const styleSheet = document.createElement("style");
 styleSheet.innerText = `
     @keyframes fadeInUp {

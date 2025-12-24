@@ -106,12 +106,11 @@ exports.getListings = async (req, res) => {
             SELECT 
                 l.*, 
                 u.username, u.full_name, u.avatar_url as author_avatar,
-                img.image_url,
+                (SELECT image_url FROM listing_images WHERE listing_id = l.id ORDER BY is_main DESC, id ASC LIMIT 1) as image_url,
                 (CASE WHEN f.user_id IS NOT NULL THEN TRUE ELSE FALSE END) as is_favorite,
-                COUNT(*) OVER() as full_count -- ВАЖНО: Считаем общее кол-во записей без учета LIMIT
+                COUNT(*) OVER() as full_count
             FROM listings l
             JOIN users u ON l.user_id = u.id
-            LEFT JOIN listing_images img ON l.id = img.listing_id AND img.is_main = TRUE
             LEFT JOIN favorites f ON l.id = f.listing_id AND f.user_id = $1
         `;
 
@@ -464,6 +463,24 @@ exports.updateListing = async (req, res) => {
                 // is_main = false, так как главная уже есть (или юзер сам удалит старую)
                 await client.query(insertImageQuery, [listingId, imageUrl, false]);
             }
+        }
+
+        const checkMain = await client.query(
+            'SELECT id FROM listing_images WHERE listing_id = $1 AND is_main = TRUE',
+            [listingId]
+        );
+
+        if (checkMain.rows.length === 0) {
+            // Если главного фото нет, берем самое первое загруженное и делаем его главным
+            await client.query(`
+                UPDATE listing_images 
+                SET is_main = TRUE 
+                WHERE id = (
+                    SELECT id FROM listing_images 
+                    WHERE listing_id = $1 
+                    ORDER BY id ASC 
+                    LIMIT 1
+                )`, [listingId]);
         }
 
         await client.query('COMMIT');
