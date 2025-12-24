@@ -3,150 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход и Регистрация - TradeCloud</title>
-    <!-- Шрифты -->
+    <title>Вход - TradeCloud</title>
     <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
-    <!-- Иконки -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Стили -->
     <link rel="stylesheet" href="src/css/main.css">
     <link rel="stylesheet" href="src/css/components/header.css">
-    <link rel="stylesheet" href="src/css/pages/auth.css">
-    <!-- Библиотека для маски телефона -->
+    <link rel="stylesheet" href="src/css/pages/auth.css"> <!-- Новый стиль -->
     <script src="https://unpkg.com/imask"></script>
 </head>
 <body>
 
     <div id="header-container"></div>
 
-    <div class="auth-container">
-        <div class="container">
-            <div class="forms-container">
-                <div class="signin-signup">
-                    
-                    <!-- ФОРМА ВХОДА (Обычная) -->
-                    <form action="#" class="sign-in-form" id="login-form">
-                        <h2 class="title">С возвращением!</h2>
-                        
-                        <div class="input-field">
-                            <i class='bx bxs-user'></i>
-                            <input type="text" placeholder="Логин" name="username" required />
-                        </div>
-                        
-                        <div class="input-field">
-                            <i class='bx bxs-lock-alt'></i>
-                            <input type="password" placeholder="Пароль" name="password" required />
-                            <i class='bx bx-hide toggle-password'></i>
-                        </div>
-                        
-                        <p class="error-msg" id="login-error"></p>
-                        <input type="submit" value="Войти" class="btn-solid" />
-                        
-                        <p class="social-text">Забыли пароль? <a href="#">Восстановить</a></p>
-                    </form>
+    <!-- Живой фон -->
+    <div class="background-mesh">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
 
-                    <!-- ФОРМА РЕГИСТРАЦИИ (Multi-step) -->
-                    <form action="#" class="sign-up-form" id="register-form">
-                        
-                        <!-- ШАГ 1: Учетные данные -->
-                        <div class="form-step active" id="step-1">
-                            <h2 class="title">Создание аккаунта</h2>
-                            <p class="step-indicator">Шаг 1 из 2: Логин и безопасность</p>
-                            
-                            <div class="input-wrapper">
-                                <div class="input-field">
-                                    <i class='bx bxs-user'></i>
-                                    <input type="text" placeholder="Придумайте логин" name="username" id="reg-username" />
-                                    <span class="tooltip">Латиница, мин. 3 символа</span>
-                                </div>
-                                <span class="field-error" id="err-username"></span>
-                            </div>
-
-                            <div class="input-wrapper">
-                                <div class="input-field">
-                                    <i class='bx bxs-lock-alt'></i>
-                                    <input type="password" placeholder="Пароль" name="password" id="reg-password" />
-                                    <i class='bx bx-hide toggle-password'></i>
-                                </div>
-                                <span class="field-error" id="err-password"></span>
-                            </div>
-
-                            <div class="input-wrapper">
-                                <div class="input-field">
-                                    <i class='bx bxs-lock-alt'></i>
-                                    <input type="password" placeholder="Повторите пароль" id="reg-password-confirm" />
-                                </div>
-                                <span class="field-error" id="err-confirm"></span>
-                            </div>
-
-                            <button type="button" class="btn-solid" id="btn-next">Далее <i class='bx bx-right-arrow-alt'></i></button>
-                        </div>
-
-                        <!-- ШАГ 2: Личные данные -->
-                        <div class="form-step" id="step-2">
-                            <h2 class="title">Личные данные</h2>
-                            <p class="step-indicator">Шаг 2 из 2: Контакты</p>
-
-                            <div class="input-wrapper">
-                                <div class="input-field">
-                                    <i class='bx bxs-id-card'></i>
-                                    <input type="text" placeholder="Имя и Фамилия" name="full_name" id="reg-fullname" />
-                                </div>
-                                <span class="field-error" id="err-fullname"></span>
-                            </div>
-
-                            <div class="input-wrapper">
-                                <div class="input-field">
-                                    <i class='bx bxs-envelope'></i>
-                                    <input type="email" placeholder="Email" name="email" id="reg-email" />
-                                </div>
-                                <span class="field-error" id="err-email"></span>
-                            </div>
-
-                            <div class="input-wrapper">
-                                <div class="input-field">
-                                    <i class='bx bxs-phone'></i>
-                                    <input type="tel" placeholder="+7 (___) ___-__-__" name="phone" id="reg-phone" />
-                                </div>
-                                <span class="field-error" id="err-phone"></span>
-                            </div>
-
-                            <div class="btn-group">
-                                <button type="button" class="btn-outline" id="btn-prev">Назад</button>
-                                <input type="submit" value="Завершить" class="btn-solid" />
-                            </div>
-                            <p class="error-msg" id="register-error"></p>
-                        </div>
-
-                    </form>
-                </div>
+    <div class="auth-wrapper">
+        <div class="auth-card" id="auth-card">
+            
+            <!-- Переключатель (Табы) -->
+            <div class="auth-toggle">
+                <div class="toggle-bg" id="toggle-bg"></div>
+                <button class="toggle-btn active" id="tab-login">Вход</button>
+                <button class="toggle-btn" id="tab-register">Регистрация</button>
             </div>
 
-            <!-- ПАНЕЛИ ПЕРЕКЛЮЧЕНИЯ (Слайдер) -->
-            <div class="panels-container">
-                <!-- Левая панель (Видна, когда форма ВХОДА активна) -->
-                <div class="panel left-panel">
-                    <div class="content">
-                        <h3>Впервые здесь?</h3>
-                        <p>Присоединяйтесь к сообществу студентов. Покупайте, продавайте и обменивайтесь безопасно.</p>
-                        <button class="btn-transparent" id="sign-up-btn">Регистрация</button>
-                    </div>
-                    <!-- Можно добавить декоративную картинку -->
-                </div>
+            <div class="forms-slider" id="forms-slider">
                 
-                <!-- Правая панель (Видна, когда форма РЕГИСТРАЦИИ активна) -->
-                <div class="panel right-panel">
-                    <div class="content">
-                        <h3>Уже есть аккаунт?</h3>
-                        <p>Войдите, чтобы управлять объявлениями и переписываться в чате.</p>
-                        <button class="btn-transparent" id="sign-in-btn">Войти</button>
+                <!-- 1. ВХОД -->
+                <form class="auth-form" id="login-form">
+                    <div class="form-header">
+                        <h2>С возвращением!</h2>
+                        <p>Введите свои данные для входа</p>
                     </div>
-                </div>
+
+                    <div class="input-group">
+                        <div class="input-field">
+                            <i class='bx bx-user'></i>
+                            <input type="text" name="username" placeholder="Логин" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-field">
+                            <i class='bx bx-lock-alt'></i>
+                            <input type="password" name="password" placeholder="Пароль" required>
+                            <i class='bx bx-hide toggle-pass'></i>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="#" class="forgot-link">Забыли пароль?</a>
+                    </div>
+
+                    <p class="error-message" id="login-error"></p>
+
+                    <button type="submit" class="btn-submit">Войти</button>
+                </form>
+
+                <!-- 2. РЕГИСТРАЦИЯ (Multi-step) -->
+                <form class="auth-form hidden" id="register-form">
+                    
+                    <!-- Шаг 1 -->
+                    <div class="reg-step active" id="step-1">
+                        <div class="form-header">
+                            <h2>Создание аккаунта</h2>
+                            <p>Шаг 1: Данные для входа</p>
+                        </div>
+
+                        <div class="input-group" id="group-reg-username">
+                            <div class="input-field">
+                                <i class='bx bx-user'></i>
+                                <input type="text" id="reg-username" placeholder="Придумайте логин">
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="input-group" id="group-reg-password">
+                            <div class="input-field">
+                                <i class='bx bx-lock-alt'></i>
+                                <input type="password" id="reg-password" placeholder="Пароль">
+                                <i class='bx bx-hide toggle-pass'></i>
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="input-group" id="group-reg-confirm">
+                            <div class="input-field">
+                                <i class='bx bx-check-shield'></i>
+                                <input type="password" id="reg-confirm" placeholder="Повторите пароль">
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <button type="button" class="btn-submit" id="btn-next">Далее</button>
+                    </div>
+
+                    <!-- Шаг 2 -->
+                    <div class="reg-step" id="step-2">
+                        <div class="form-header">
+                            <h2>Личные данные</h2>
+                            <p>Шаг 2: Контакты</p>
+                        </div>
+
+                        <div class="input-group" id="group-reg-fullname">
+                            <div class="input-field">
+                                <i class='bx bx-id-card'></i>
+                                <input type="text" id="reg-fullname" placeholder="Имя и Фамилия">
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="input-group" id="group-reg-email">
+                            <div class="input-field">
+                                <i class='bx bx-envelope'></i>
+                                <input type="email" id="reg-email" placeholder="Email">
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="input-group" id="group-reg-phone">
+                            <div class="input-field">
+                                <i class='bx bx-phone'></i>
+                                <input type="tel" id="reg-phone" placeholder="+7 (___) ___-__-__">
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="buttons-row">
+                            <button type="button" class="btn-back" id="btn-prev">Назад</button>
+                            <button type="submit" class="btn-submit">Создать аккаунт</button>
+                        </div>
+                        <p class="error-message" id="register-error"></p>
+                    </div>
+
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Скрипты -->
     <script src="src/js/components/header.js"></script>
     <script src="src/js/pages/auth.js"></script>
 </body>

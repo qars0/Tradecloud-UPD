@@ -1,308 +1,249 @@
-/* Общий контейнер */
-.auth-container {
-    width: 100%;
+/* --- ЖИВОЙ ФОН --- */
+.background-mesh {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    background: #F4F7FE;
+}
+
+.blob {
+    position: absolute;
+    filter: blur(80px);
+    opacity: 0.6;
+    animation: move 10s infinite alternate;
+}
+
+.blob-1 {
+    top: -10%; left: -10%; width: 50vw; height: 50vw;
+    background: #3A86FF;
+    animation-duration: 15s;
+}
+
+.blob-2 {
+    bottom: -10%; right: -10%; width: 40vw; height: 40vw;
+    background: #8338EC;
+    animation-duration: 12s;
+    animation-direction: alternate-reverse;
+}
+
+.blob-3 {
+    top: 40%; left: 40%; width: 30vw; height: 30vw;
+    background: #FF006E;
+    opacity: 0.3;
+    animation-duration: 20s;
+}
+
+@keyframes move {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(50px, 50px) scale(1.1); }
+}
+
+/* --- КОНТЕЙНЕР --- */
+.auth-wrapper {
     min-height: calc(100vh - 80px);
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f0f2f5;
     padding: 20px;
-    overflow: hidden;
 }
 
-.container {
-    position: relative;
-    width: 100%;
-    max-width: 1000px; /* Чуть шире для удобства */
-    height: 650px;
-    background-color: #fff;
+/* --- СТЕКЛЯННАЯ КАРТОЧКА --- */
+.auth-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 30px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
     overflow: hidden;
 }
 
-/* --- ФОРМЫ --- */
-.forms-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-}
-
-.signin-signup {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    left: 75%;
-    width: 50%;
-    display: grid;
-    grid-template-columns: 1fr;
-    z-index: 5;
-    transition: 1s 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-form {
+/* --- ПЕРЕКЛЮЧАТЕЛЬ (TABS) --- */
+.auth-toggle {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4rem;
-    overflow: hidden;
-    grid-column: 1 / 2;
-    grid-row: 1 / 2;
-    transition: 0.2s 0.7s ease-in-out;
-    width: 100%;
-}
-
-form.sign-in-form { z-index: 2; }
-form.sign-up-form { z-index: 1; opacity: 0; }
-
-.title {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 10px;
-    font-weight: 800;
-}
-
-.step-indicator {
-    font-size: 0.9rem;
-    color: var(--primary-color);
-    margin-bottom: 20px;
-    font-weight: 500;
-}
-
-/* --- ПОЛЯ ВВОДА --- */
-.input-wrapper {
-    width: 100%;
-    max-width: 380px;
-    margin-bottom: 15px; /* Отступ для ошибки */
+    background: rgba(0,0,0,0.05);
+    border-radius: 15px;
+    padding: 5px;
     position: relative;
+    margin-bottom: 30px;
 }
 
-.input-field {
-    width: 100%;
-    height: 55px;
-    background-color: #f0f0f0;
-    border-radius: 55px;
-    display: grid;
-    grid-template-columns: 15% 70% 15%; /* Иконка, Инпут, Глазик */
-    align-items: center;
-    padding: 0 0.4rem;
-    position: relative;
-    border: 2px solid transparent;
-    transition: 0.3s;
-}
-
-.input-field:focus-within {
-    background-color: #fff;
-    border-color: var(--primary-color);
-    box-shadow: 0 5px 15px rgba(58, 134, 255, 0.1);
-}
-
-/* Состояние ошибки */
-.input-field.error {
-    border-color: #FF3B30;
-    background-color: #FFF0F0;
-}
-
-.input-field i {
-    text-align: center;
-    color: #acacac;
-    font-size: 1.2rem;
-}
-
-.input-field input {
+.toggle-btn {
+    flex: 1;
     background: none;
-    outline: none;
     border: none;
-    line-height: 1;
-    font-weight: 500;
-    font-size: 1rem;
-    color: #333;
-    font-family: inherit;
-    width: 100%;
-}
-
-/* Тултипы и Ошибки */
-.tooltip {
-    font-size: 11px;
-    color: #999;
-    margin-left: 15px;
-    margin-top: 4px;
-    display: block;
-}
-
-.field-error {
-    font-size: 11px;
-    color: #FF3B30;
-    margin-left: 15px;
-    margin-top: 4px;
-    display: block;
-    min-height: 14px; /* Чтобы не скакало */
-}
-
-.toggle-password {
-    cursor: pointer;
-    z-index: 10;
-    transition: color 0.2s;
-}
-.toggle-password:hover { color: var(--primary-color); }
-
-/* --- КНОПКИ --- */
-.btn-solid {
-    width: 150px;
-    height: 50px;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    background-color: var(--primary-color);
-    color: #fff;
+    padding: 12px;
+    font-size: 16px;
     font-weight: 600;
-    margin: 10px 0;
-    transition: 0.3s;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: 0 8px 15px rgba(58, 134, 255, 0.2);
-}
-
-.btn-solid:hover {
-    background-color: #2b6cb0;
-    transform: translateY(-2px);
-}
-
-.btn-outline {
-    width: 120px;
-    height: 50px;
-    border: 2px solid #ccc;
-    border-radius: 50px;
-    background: transparent;
-    color: #666;
-    font-weight: 600;
+    color: #777;
     cursor: pointer;
-    transition: 0.3s;
+    z-index: 2;
+    transition: color 0.3s;
 }
 
-.btn-outline:hover {
-    border-color: var(--text-dark);
+.toggle-btn.active {
     color: var(--text-dark);
 }
 
-.btn-group {
-    display: flex;
-    gap: 15px;
-    margin-top: 10px;
-}
-
-/* --- МУЛЬТИ-ШАГОВАЯ АНИМАЦИЯ --- */
-.form-step {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    animation: fadeStep 0.4s ease;
-}
-
-.form-step.active {
-    display: flex;
-}
-
-@keyframes fadeStep {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-/* --- СЛАЙДЕР И ПАНЕЛИ --- */
-.panels-container {
+/* Бегающая плашка */
+.toggle-bg {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    top: 5px; left: 5px;
+    width: calc(50% - 5px);
+    height: calc(100% - 10px);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 1;
 }
 
-.panel {
+/* Сдвиг плашки */
+.auth-card.register-mode .toggle-bg {
+    transform: translateX(100%);
+    left: 0; /* Коррекция смещения */
+    margin-left: 5px; /* Компенсация паддинга */
+}
+
+/* --- ФОРМЫ --- */
+.forms-slider {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: space-around;
-    text-align: center;
-    z-index: 6;
-    pointer-events: none; /* Пропускаем клики */
+    width: 200%; /* Две формы рядом */
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.left-panel { padding: 3rem 17% 2rem 12%; }
-.right-panel { padding: 3rem 12% 2rem 17%; }
-
-.panel .content {
-    color: #fff;
-    transition: 0.9s 0.6s ease-in-out;
-    pointer-events: auto; /* Включаем клики */
+.auth-form {
+    width: 50%; /* Каждая занимает половину слайдера */
+    padding: 0 5px; /* Небольшой отступ по бокам */
+    transition: opacity 0.3s;
+    opacity: 1;
 }
 
-.panel h3 { font-weight: 600; line-height: 1; font-size: 1.5rem; margin-bottom: 10px; }
-.panel p { font-size: 0.95rem; padding: 0.7rem 0; margin-bottom: 10px; }
-
-.btn-transparent {
-    margin: 0;
-    background: none;
-    border: 2px solid #fff;
-    width: 130px;
-    height: 41px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: #fff;
-    border-radius: 49px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: 0.3s;
+/* Когда активна регистрация, слайдер едет влево */
+.auth-card.register-mode .forms-slider {
+    transform: translateX(-50%);
 }
-.btn-transparent:hover { background: rgba(255,255,255,0.2); }
 
-/* --- АНИМАЦИЯ ШАРА --- */
-.container:before {
-    content: "";
-    position: absolute;
-    width: 2000px;
-    height: 2000px;
-    border-radius: 50%;
-    background: linear-gradient(-45deg, var(--primary-color), #004ecc);
-    top: -10%;
-    right: 48%;
-    transform: translateY(-50%);
-    z-index: 6;
-    transition: 1.8s ease-in-out;
+.auth-card.register-mode #login-form {
+    opacity: 0;
     pointer-events: none;
 }
 
-/* State: Sign Up Mode */
-.container.sign-up-mode:before {
-    transform: translate(100%, -50%);
-    right: 52%;
+.auth-card:not(.register-mode) #register-form {
+    opacity: 0;
+    pointer-events: none;
 }
 
-.container.sign-up-mode .signin-signup {
-    left: 25%;
-}
-
-.container.sign-up-mode form.sign-in-form { z-index: 1; opacity: 0; pointer-events: none; }
-.container.sign-up-mode form.sign-up-form { z-index: 2; opacity: 1; pointer-events: auto; }
-
-/* Анимация текста */
-.right-panel .content { transform: translateX(800px); }
-.container.sign-up-mode .right-panel .content { transform: translateX(0); }
-.container.sign-up-mode .left-panel .content { transform: translateX(-800px); }
-
-/* Ошибки общие */
-.error-msg {
-    color: #FF3B30;
-    margin-top: 10px;
-    font-size: 13px;
+/* --- ЭЛЕМЕНТЫ ФОРМЫ --- */
+.form-header {
     text-align: center;
-    display: none;
+    margin-bottom: 25px;
+}
+
+.form-header h2 { font-size: 24px; font-weight: 800; margin-bottom: 5px; color: var(--text-dark); }
+.form-header p { font-size: 14px; color: #777; }
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-field {
+    background: white;
+    border: 2px solid #F0F2F5;
+    border-radius: 15px;
+    padding: 0 15px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.input-field:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(58, 134, 255, 0.1);
+}
+
+.input-field i {
+    font-size: 20px;
+    color: #999;
+}
+
+.input-field input {
+    border: none;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* Ошибка */
+.input-group.error .input-field {
+    border-color: var(--danger-color);
+    background: #FFF5F5;
+}
+.error-text {
+    font-size: 12px; color: var(--danger-color); margin-top: 5px; margin-left: 5px; display: none;
+}
+.input-group.error .error-text { display: block; }
+
+.toggle-pass { cursor: pointer; transition: color 0.2s; }
+.toggle-pass:hover { color: var(--primary-color); }
+
+.form-actions {
+    display: flex; justify-content: flex-end; margin-bottom: 20px;
+}
+.forgot-link { font-size: 13px; color: var(--primary-color); text-decoration: none; font-weight: 500; }
+
+/* КНОПКИ */
+.btn-submit {
+    width: 100%;
+    height: 55px;
+    background: linear-gradient(135deg, #3A86FF 0%, #8338EC 100%);
+    border: none;
+    border-radius: 15px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(58, 134, 255, 0.3);
+    transition: transform 0.2s;
+}
+
+.btn-submit:hover { transform: translateY(-2px); }
+
+.btn-back {
+    width: 100px;
+    height: 55px;
+    background: white;
+    border: 2px solid #F0F2F5;
+    border-radius: 15px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-back:hover { background: #F8F9FA; }
+
+.buttons-row { display: flex; gap: 10px; }
+
+/* --- ШАГИ РЕГИСТРАЦИИ (Внутри формы) --- */
+.reg-step { display: none; animation: fadeIn 0.4s ease; }
+.reg-step.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.error-message {
+    color: var(--danger-color); text-align: center; margin-bottom: 10px; font-size: 13px;
 }
