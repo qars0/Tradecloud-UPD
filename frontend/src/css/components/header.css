@@ -425,3 +425,56 @@
     animation: ring 0.5s ease;
     color: var(--primary-color);
 }
+
+/* Отображение меню при наличии класса active */
+.notif-menu {
+    display: none; /* По умолчанию скрыто */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.notif-menu.active {
+    display: flex; /* Показываем */
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Анимация звонка */
+@keyframes bell-ring {
+    0% { transform: rotate(0); }
+    15% { transform: rotate(15deg); }
+    30% { transform: rotate(-15deg); }
+    45% { transform: rotate(10deg); }
+    60% { transform: rotate(-10deg); }
+    100% { transform: rotate(0); }
+}
+
+.icon-btn.ringing i {
+    animation: bell-ring 0.6s ease;
+    color: #FF3B30 !important;
+}
+
+/* Красный кружок (бейдж) */
+.badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #FF3B30;
+    color: white;
+    font-size: 9px;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    pointer-events: none;
+}
+
+.icon-message { 
+    background: #E3F2FD; 
+    color: #2196F3; 
+}

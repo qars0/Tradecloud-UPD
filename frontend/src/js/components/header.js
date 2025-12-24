@@ -2,273 +2,249 @@ class HeaderComponent {
     constructor() {
         this.container = document.getElementById('header-container');
         this.isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
-        this.user = JSON.parse(localStorage.getItem('user')) || {
-            name: 'Гость',
-            avatar: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
-        };
+        this.user = JSON.parse(localStorage.getItem('user')) || null;
+        this.socket = null;
     }
 
-    render() {
+    async render() {
         if (!this.container) return;
 
-        // --- ЛЕВАЯ ЧАСТЬ ---
-        const leftSection = `
-            <a href="/index.html" class="header__logo">
-                <i class='bx bx-cloud-alt'></i>
-                <span class="header__logo-text">TradeCloud</span>
-            </a>
-        `;
-
-        // --- ЦЕНТРАЛЬНАЯ ЧАСТЬ ---
-        const centerSection = `
-            <div class="header__center">
-                <button class="btn-catalog-header" onclick="location.href='/catalog.html'">
-                    <i class='bx bx-grid-alt'></i> Каталог
-                </button>
-                <div class="header__search">
-                    <i class='bx bx-search'></i>
-                    <input type="text" placeholder="Найти товар, услугу..." id="global-search">
-                </div>
-            </div>
-        `;
-
-        // --- ПРАВАЯ ЧАСТЬ ---
-        let rightSection = '';
-
-        if (this.isLoggedIn) {
-            rightSection = `
-                <div class="header__right">
-                    <a href="/chat.html" class="icon-btn" title="Сообщения">
-                        <i class='bx bx-message-rounded-dots'></i>
-                    </a>
-                    
-                    <a href="/favorites.html" class="icon-btn" title="Избранное">
-                        <i class='bx bx-heart'></i>
-                    </a>
-                    
-                    <a href="/notifications.html" class="icon-btn" title="Уведомления" id="notif-link">
-                        <i class='bx bx-bell'></i>
-                        <!-- Бейдж (если есть) -->
-                    </a>
-                    
-                    <a href="/create-listing.html" class="btn-create-header">
-                        <i class='bx bx-plus'></i> Разместить
-                    </a>
-                    
-                    <div class="profile-dropdown">
-                        <div class="profile-trigger" onclick="location.href='/profile.html'">
-                            <img src="${this.user.avatar}" alt="Ava" class="profile-avatar">
-                            <i class='bx bx-chevron-down' style="color:#999"></i>
-                        </div>
-                        
-                        <div class="dropdown-menu">
-                            <a href="/profile.html" class="dropdown-item">
-                                <i class='bx bx-user'></i> Мой профиль
-                            </a>
-                            <a href="/profile.html?tab=listings" class="dropdown-item">
-                                <i class='bx bx-list-ul'></i> Мои объявления
-                            </a>
-                            <a href="/profile.html?tab=settings" class="dropdown-item">
-                                <i class='bx bx-cog'></i> Настройки
-                            </a>
-                            
-                            <div class="dropdown-divider"></div>
-                            
-                            <a href="#" class="dropdown-item" id="logout-btn" style="color: var(--danger-color);">
-                                <i class='bx bx-log-out' style="color: var(--danger-color);"></i> Выход
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            rightSection = `
-                <div class="header__right">
-                    <div class="auth-links">
-                        <a href="/login.html" class="link-login">Вход</a>
-                    </div>
-                    <a href="/login.html?mode=register" class="btn-create-header" style="background: var(--text-dark);">
-                        Регистрация
-                    </a>
-                </div>
-            `;
-        }
-
-        // СБОРКА
+        // Рендерим базу хедера (структура из прошлого шага)
         this.container.innerHTML = `
             <header class="header">
                 <div class="header__content">
-                    ${leftSection}
-                    ${centerSection}
-                    ${rightSection}
+                    <a href="/index.html" class="header__logo">
+                        <i class='bx bx-cloud-alt'></i>
+                        <span class="header__logo-text">TradeCloud</span>
+                    </a>
+
+                    <div class="header__center">
+                        <button class="btn-catalog-header" onclick="location.href='/catalog.html'">
+                            <i class='bx bx-grid-alt'></i> Каталог
+                        </button>
+                        <div class="header__search">
+                            <i class='bx bx-search'></i>
+                            <input type="text" placeholder="Найти товар..." id="global-search">
+                        </div>
+                    </div>
+
+                    <div class="header__right">
+                        ${this.isLoggedIn ? this.getPrivateNav() : this.getPublicNav()}
+                    </div>
                 </div>
             </header>
         `;
 
         this.attachEvents();
-        if (this.isLoggedIn) this.initNotifications();
+        if (this.isLoggedIn) {
+            this.initSocket();
+            this.loadUnreadCount();
+        }
+    }
+
+    getPrivateNav() {
+        return `
+            <a href="/chat.html" class="icon-btn" title="Сообщения"><i class='bx bx-message-rounded-dots'></i></a>
+            <a href="/favorites.html" class="icon-btn" title="Избранное"><i class='bx bx-heart'></i></a>
+            
+            <!-- КОЛОКОЛЬЧИК -->
+            <div class="notif-dropdown">
+                <div class="icon-btn" id="notif-btn" style="cursor:pointer">
+                    <i class='bx bx-bell'></i>
+                </div>
+                <div class="notif-menu" id="notif-menu">
+                    <div class="notif-header">
+                        <span>Уведомления</span>
+                        <button id="mark-read-all" style="background:none; border:none; color:var(--primary-color); font-size:11px; cursor:pointer">Прочитать всё</button>
+                    </div>
+                    <div id="notif-list-content">
+                        <div style="padding:20px; text-align:center; color:#999">Нет новых уведомлений</div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="/create-listing.html" class="btn-create-header"><i class='bx bx-plus'></i> Разместить</a>
+            
+            <div class="profile-dropdown">
+                <div class="profile-trigger">
+                    <img src="${this.user?.avatar || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="profile-avatar">
+                </div>
+                <div class="dropdown-menu">
+                    <a href="/profile.html" class="dropdown-item"><i class='bx bx-user'></i> Профиль</a>
+                    <a href="/profile.html?tab=settings" class="dropdown-item"><i class='bx bx-cog'></i> Настройки</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item" id="logout-btn" style="color:var(--danger-color)"><i class='bx bx-log-out'></i> Выход</a>
+                </div>
+            </div>
+        `;
+    }
+
+    getPublicNav() {
+        return `
+            <div class="auth-links">
+                <a href="/login.html" class="link-login">Вход</a>
+            </div>
+            <a href="/login.html?mode=register" class="btn-create-header" style="background: var(--text-dark);">Регистрация</a>
+        `;
     }
 
     attachEvents() {
-        // Логика выхода
+        // Выход
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
+            logoutBtn.onclick = (e) => {
                 e.preventDefault();
-                fetch('/api/auth/logout', { method: 'POST' })
-                    .then(() => {
-                        localStorage.setItem('isLoggedIn', 'false');
-                        localStorage.removeItem('user');
-                        window.location.href = '/login.html';
-                    });
-            });
+                fetch('/api/auth/logout', { method: 'POST' }).then(() => {
+                    localStorage.clear();
+                    location.href = '/login.html';
+                });
+            };
         }
 
         // Поиск
         const searchInput = document.getElementById('global-search');
         if (searchInput) {
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    window.location.href = `/catalog.html?search=${encodeURIComponent(searchInput.value)}`;
-                }
-            });
+            searchInput.onkeypress = (e) => {
+                if (e.key === 'Enter') location.href = `/catalog.html?search=${encodeURIComponent(searchInput.value)}`;
+            };
         }
+
+        // --- ЛОГИКА ОТКРЫТИЯ УВЕДОМЛЕНИЙ ---
+        const notifBtn = document.getElementById('notif-btn');
+        const notifMenu = document.getElementById('notif-menu');
+        
+        if (notifBtn && notifMenu) {
+            notifBtn.onclick = (e) => {
+                e.stopPropagation();
+                const isActive = notifMenu.classList.contains('active');
+                
+                // Закрываем всё остальное
+                this.closeAllMenus();
+
+                if (!isActive) {
+                    notifMenu.classList.add('active');
+                    this.loadNotifications();
+                }
+            };
+
+            // Кнопка "Прочитать всё"
+            const markAllBtn = document.getElementById('mark-read-all');
+            if (markAllBtn) {
+                markAllBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    await fetch('/api/notifications/read', { method: 'POST' });
+                    this.loadUnreadCount();
+                    this.loadNotifications();
+                };
+            }
+        }
+
+        // Клик вне меню закрывает его
+        document.addEventListener('click', () => this.closeAllMenus());
     }
 
-    // Уведомления
-    async initNotifications() {
-        if (!this.isLoggedIn) return;
+    closeAllMenus() {
+        const notifMenu = document.getElementById('notif-menu');
+        if (notifMenu) notifMenu.classList.remove('active');
+    }
 
-        // 1. Загрузка счетчика
-        this.loadUnreadCount();
+    // --- SOCKETS ---
+    async initSocket() {
+        if (typeof io === 'undefined') return;
 
-        // 2. Обработчик клика по колокольчику
+        this.socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
+
+        // Узнаем свой ID и логинимся в комнату
+        try {
+            const res = await fetch('/api/user/me');
+            const data = await res.json();
+            if (data.id) {
+                this.socket.emit('login', data.id);
+            }
+        } catch (e) {}
+
+        this.socket.on('new_notification', (notif) => {
+            this.playNotifAnimation();
+            this.loadUnreadCount();
+        });
+    }
+
+    playNotifAnimation() {
         const btn = document.getElementById('notif-btn');
-        const menu = document.getElementById('notif-menu');
-        
-        if (btn && menu) {
-            btn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                // Тоггл меню
-                if (menu.classList.contains('active')) {
-                    menu.classList.remove('active');
-                } else {
-                    // Закрываем другие меню
-                    document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
-                    
-                    menu.classList.add('active');
-                    await this.loadNotificationsList();
-                    this.markAsRead(); // Помечаем прочитанными
-                }
-            });
-
-            // Закрытие при клике вне
-            document.addEventListener('click', (e) => {
-                if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                    menu.classList.remove('active');
-                }
-            });
-        }
-
-        // 3. Сокеты
-        if (typeof io !== 'undefined') {
-            const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
-            
-            try {
-                const userRes = await fetch('/api/user/me');
-                if(userRes.ok) {
-                    const user = await userRes.json();
-                    socket.emit('login', user.id);
-                }
-            } catch(e) {}
-
-            socket.on('new_notification', (data) => {
-                this.loadUnreadCount(); // Обновить цифру
-                
-                // Эффект звонка
-                const icon = document.querySelector('#notif-btn i');
-                if(icon) {
-                    icon.parentElement.classList.add('ringing');
-                    setTimeout(() => icon.parentElement.classList.remove('ringing'), 500);
-                }
-                
-                // Если меню открыто - добавить в список
-                const list = document.getElementById('notif-list');
-                if (document.getElementById('notif-menu').classList.contains('active')) {
-                    this.loadNotificationsList(); 
-                }
-            });
+        if (btn) {
+            btn.classList.add('ringing');
+            setTimeout(() => btn.classList.remove('ringing'), 1000);
         }
     }
 
     async loadUnreadCount() {
         try {
             const res = await fetch('/api/notifications/count');
-            const data = await res.json();
-            this.renderBadge(data.count);
-        } catch(e) {}
+            const { count } = await res.json();
+            this.renderBadge(count);
+        } catch (e) {}
     }
 
     renderBadge(count) {
         const btn = document.getElementById('notif-btn');
+        if (!btn) return;
         let badge = btn.querySelector('.badge');
+        
         if (count > 0) {
             if (!badge) {
                 badge = document.createElement('span');
                 badge.className = 'badge';
                 btn.appendChild(badge);
             }
-            badge.innerText = count > 99 ? '99+' : count;
-        } else {
-            if (badge) badge.remove();
+            badge.innerText = count > 9 ? '9+' : count;
+        } else if (badge) {
+            badge.remove();
         }
     }
 
-    async loadNotificationsList() {
-        const container = document.getElementById('notif-list');
-        container.innerHTML = '<div style="padding:20px; text-align:center; color:#999">Загрузка...</div>';
-        
+    async loadNotifications() {
+        const list = document.getElementById('notif-list-content');
+        list.innerHTML = '<div style="padding:20px; text-align:center;"><i class="bx bx-loader-alt bx-spin"></i></div>';
+
         try {
             const res = await fetch('/api/notifications');
-            const list = await res.json();
-            
-            container.innerHTML = '';
-            
-            if (list.length === 0) {
-                container.innerHTML = '<div style="padding:20px; text-align:center; color:#999">Нет уведомлений</div>';
+            const data = await res.json();
+
+            if (data.length === 0) {
+                list.innerHTML = '<div style="padding:20px; text-align:center; color:#999">Уведомлений нет</div>';
                 return;
             }
 
-            list.forEach(item => {
-                let icon = 'bx-bell';
-                let styleClass = 'icon-system';
-                
-                if (item.type === 'outbid') { icon = 'bx-down-arrow-circle'; styleClass = 'icon-outbid'; }
-                if (item.type === 'win') { icon = 'bx-trophy'; styleClass = 'icon-win'; }
-                if (item.type === 'bid_placed') { icon = 'bx-gavel'; styleClass = 'icon-bid_placed'; }
+            list.innerHTML = data.map(n => {
+                const iconMap = {
+                    'outbid': 'bx-down-arrow-circle',
+                    'win': 'bx-trophy',
+                    'bid_placed': 'bx-gavel',
+                    'message': 'bx-message-dots'
+                };
+                const classMap = {
+                    'outbid': 'icon-outbid',
+                    'win': 'icon-win',
+                    'bid_placed': 'icon-bid_placed',
+                    'message': 'icon-system'
+                };
 
-                const html = `
-                    <a href="${item.link || '#'}" class="notif-item ${item.is_read ? '' : 'unread'}">
-                        <div class="notif-icon-box ${styleClass}">
-                            <i class='bx ${icon}'></i>
+                return `
+                    <a href="${n.link || '#'}" class="notif-item ${n.is_read ? '' : 'unread'}">
+                        <div class="notif-icon-box ${classMap[n.type] || 'icon-system'}">
+                            <i class='bx ${iconMap[n.type] || 'bx-bell'}'></i>
                         </div>
                         <div class="notif-text">
-                            <h4>${item.title}</h4>
-                            <p>${item.message}</p>
-                            <div class="notif-time">${new Date(item.created_at).toLocaleString()}</div>
+                            <h4>${n.title}</h4>
+                            <p>${n.message}</p>
+                            <div class="notif-time">${new Date(n.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
                         </div>
                     </a>
                 `;
-                container.innerHTML += html;
-            });
-        } catch(e) {
-            container.innerHTML = 'Ошибка';
+            }).join('');
+        } catch (e) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:red">Ошибка загрузки</div>';
         }
-    }
-
-    async markAsRead() {
-        await fetch('/api/notifications/read', { method: 'POST' });
-        this.renderBadge(0);
     }
 }
 

@@ -76,23 +76,46 @@ io.on('connection', (socket) => {
 
     // Отправка сообщения
     socket.on('send_message', async (data) => {
-        // data = { chatId, senderId, content }
         const { chatId, senderId, content } = data;
 
         try {
-            // Сохраняем в БД
-            const result = await pool.query(
+            // 1. Сохраняем сообщение в базу
+            const msgResult = await pool.query(
                 'INSERT INTO messages (chat_id, sender_id, content) VALUES ($1, $2, $3) RETURNING *',
                 [chatId, senderId, content]
             );
-            
-            const savedMsg = result.rows[0];
+            const savedMsg = msgResult.rows[0];
 
-            // Отправляем всем в комнате (включая отправителя, чтобы подтвердить)
+            // 2. Отправляем сообщение в комнату чата (для реалтайм обновления окна чата)
             io.to(chatId).emit('receive_message', savedMsg);
+
+            // 3. УВЕДОМЛЕНИЕ: Находим, кому отправить уведомление
+            const chatRes = await pool.query(
+                'SELECT buyer_id, seller_id FROM chats WHERE id = $1',
+                [chatId]
+            );
+
+            if (chatRes.rows.length > 0) {
+                const { buyer_id, seller_id } = chatRes.rows[0];
+                // Получатель — это тот, кто НЕ является отправителем
+                const recipientId = (senderId == buyer_id) ? seller_id : buyer_id;
+
+                // Находим имя отправителя для текста уведомления
+                const senderRes = await pool.query('SELECT full_name, username FROM users WHERE id = $1', [senderId]);
+                const senderName = senderRes.rows[0].full_name || senderRes.rows[0].username;
+
+                // Отправляем уведомление через сервис
+                await notifService.send(
+                    recipientId,
+                    'message',
+                    'Новое сообщение',
+                    `От ${senderName}: "${content.substring(0, 30)}${content.length > 30 ? '...' : ''}"`,
+                    `/chat.html?chat_id=${chatId}`
+                );
+            }
             
         } catch (err) {
-            console.error('Ошибка сохранения сообщения:', err);
+            console.error('Socket Message Error:', err);
         }
     });
 
