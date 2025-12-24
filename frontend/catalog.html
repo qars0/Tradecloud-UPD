@@ -2,7 +2,6 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Каталог - TradeCloud</title>
     <link href="https://fonts.yandex.net/text/text.css" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -17,92 +16,81 @@
 
     <div class="catalog-container">
         
-        <!-- Сайдбар Фильтров -->
+        <!-- Сайдбар -->
         <aside class="filters-sidebar" id="filters-sidebar">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
                 <h2>Фильтры</h2>
-                <i class='bx bx-x' id="close-filters" style="font-size:24px; cursor:pointer; display:none;"></i>
+                <i class='bx bx-x' id="close-filters" style="font-size:24px; cursor:pointer; display:none"></i>
             </div>
 
-            <!-- 1. Категории -->
+            <!-- Категории -->
             <div class="filter-group">
                 <div class="filter-title">Категория</div>
                 <div class="chips-group" id="category-filters">
-                    <!-- Загрузятся JS -->
-                    <div style="font-size:12px; color:#999">Загрузка...</div>
+                    <!-- JS -->
                 </div>
             </div>
 
-            <!-- 2. Тип сделки -->
+            <!-- Тип -->
             <div class="filter-group">
                 <div class="filter-title">Тип сделки</div>
                 <div class="chips-group">
-                    <label class="filter-chip">
-                        <input type="radio" name="type" value="" checked onchange="applyFilters()">
-                        <span class="chip-content">Все</span>
-                    </label>
-                    <label class="filter-chip">
-                        <input type="radio" name="type" value="sell" onchange="applyFilters()">
-                        <span class="chip-content">Купить</span>
-                    </label>
-                    <label class="filter-chip">
-                        <input type="radio" name="type" value="rent" onchange="applyFilters()">
-                        <span class="chip-content">Аренда</span>
-                    </label>
-                    <label class="filter-chip">
-                        <input type="radio" name="type" value="service" onchange="applyFilters()">
-                        <span class="chip-content">Услуги</span>
-                    </label>
-                    <label class="filter-chip">
-                        <input type="radio" name="type" value="auction" onchange="applyFilters()">
-                        <span class="chip-content">Аукцион</span>
-                    </label>
+                    <label class="filter-chip"><input type="radio" name="type" value="" checked><span class="chip-content">Все</span></label>
+                    <label class="filter-chip"><input type="radio" name="type" value="sell"><span class="chip-content">Купить</span></label>
+                    <label class="filter-chip"><input type="radio" name="type" value="rent"><span class="chip-content">Аренда</span></label>
+                    <label class="filter-chip"><input type="radio" name="type" value="auction"><span class="chip-content">Аукцион</span></label>
+                    <label class="filter-chip"><input type="radio" name="type" value="service"><span class="chip-content">Услуги</span></label>
                 </div>
             </div>
 
-            <!-- 3. Цена -->
+            <!-- Цена -->
             <div class="filter-group">
-                <div class="filter-title">Цена (₽)</div>
+                <div class="filter-title">Цена</div>
                 <div class="price-inputs">
                     <input type="number" id="min-price" class="price-field" placeholder="От">
                     <input type="number" id="max-price" class="price-field" placeholder="До">
                 </div>
             </div>
 
-            <button class="btn-apply" onclick="applyFilters()">Применить</button>
-            <button class="btn-reset" onclick="resetFilters()">Сбросить всё</button>
+            <button class="btn-apply" onclick="applyFilters(1)">Применить</button>
+            <button class="btn-reset" onclick="resetFilters()">Сбросить</button>
         </aside>
 
-        <!-- Основной контент -->
+        <!-- Контент -->
         <main class="catalog-main">
             
             <div class="catalog-header">
-                <!-- Кнопка фильтров (мобильная) -->
-                <div class="mobile-filter-btn" id="open-filters">
+                <div class="search-wrapper">
+                    <i class='bx bx-search'></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="Поиск по названию...">
+                </div>
+
+                <div class="mobile-filter-toggle" onclick="toggleSidebar()">
                     <i class='bx bx-filter-alt'></i> Фильтры
                 </div>
 
-                <div class="search-bar">
-                    <i class='bx bx-search'></i>
-                    <input type="text" id="search-input" class="search-input" placeholder="Поиск товаров...">
-                </div>
-
-                <select class="sort-select" id="sort-select" onchange="applyFilters()">
+                <select class="sort-select" id="sort-select" onchange="applyFilters(1)">
                     <option value="new">Сначала новые</option>
                     <option value="cheap">Сначала дешевые</option>
                     <option value="expensive">Сначала дорогие</option>
                 </select>
             </div>
 
-            <div id="catalog-grid" class="catalog-grid">
-                <!-- Карточки -->
-                <div class="empty-state">Загрузка...</div>
-            </div>
+            <!-- Активные фильтры -->
+            <div class="active-filters" id="active-filters"></div>
+
+            <!-- Сетка -->
+            <div id="catalog-grid" class="catalog-grid"></div>
+
+            <!-- Пагинация -->
+            <div id="pagination" class="pagination"></div>
 
         </main>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- Оверлей для мобильного меню -->
+    <div class="modal-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     <script src="src/js/components/header.js"></script>
     <script src="src/js/components/card-renderer.js"></script>
     <script src="src/js/pages/catalog.js"></script>
