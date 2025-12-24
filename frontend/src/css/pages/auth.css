@@ -1,12 +1,11 @@
-/* auth.css - ЗЕРКАЛЬНАЯ ВЕРСИЯ */
-
+/* Общий контейнер */
 .auth-container {
     width: 100%;
     min-height: calc(100vh - 80px);
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--secondary-color);
+    background-color: #f0f2f5;
     padding: 20px;
     overflow: hidden;
 }
@@ -14,14 +13,15 @@
 .container {
     position: relative;
     width: 100%;
-    max-width: 900px;
+    max-width: 1000px; /* Чуть шире для удобства */
     height: 650px;
     background-color: #fff;
-    border-radius: var(--border-radius-xxlarge);
-    box-shadow: var(--shadow-medium);
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
     overflow: hidden;
 }
 
+/* --- ФОРМЫ --- */
 .forms-container {
     position: absolute;
     width: 100%;
@@ -30,60 +30,86 @@
     left: 0;
 }
 
-/* Обертка для форм */
 .signin-signup {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    left: 75%; /* <--- ИЗМЕНЕНИЕ: Формы стартуют справа */
+    left: 75%;
     width: 50%;
     display: grid;
     grid-template-columns: 1fr;
     z-index: 5;
-    transition: 1s 0.7s ease-in-out;
+    transition: 1s 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 form {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    padding: 0 5rem;
+    padding: 0 4rem;
     overflow: hidden;
     grid-column: 1 / 2;
     grid-row: 1 / 2;
     transition: 0.2s 0.7s ease-in-out;
+    width: 100%;
 }
 
 form.sign-in-form { z-index: 2; }
 form.sign-up-form { z-index: 1; opacity: 0; }
 
 .title {
-    font-size: 2.2rem;
-    color: var(--text-dark);
+    font-size: 2rem;
+    color: #333;
     margin-bottom: 10px;
-    font-weight: 700;
+    font-weight: 800;
 }
 
-.input-field {
-    max-width: 380px;
+.step-indicator {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+/* --- ПОЛЯ ВВОДА --- */
+.input-wrapper {
     width: 100%;
-    height: 55px;
-    background-color: #f0f0f0;
-    margin: 10px 0;
-    border-radius: 55px;
-    display: flex;
-    align-items: center;
-    padding: 0 0.4rem;
+    max-width: 380px;
+    margin-bottom: 15px; /* Отступ для ошибки */
     position: relative;
 }
 
-.input-field i.icon-left {
+.input-field {
+    width: 100%;
+    height: 55px;
+    background-color: #f0f0f0;
+    border-radius: 55px;
+    display: grid;
+    grid-template-columns: 15% 70% 15%; /* Иконка, Инпут, Глазик */
+    align-items: center;
+    padding: 0 0.4rem;
+    position: relative;
+    border: 2px solid transparent;
+    transition: 0.3s;
+}
+
+.input-field:focus-within {
+    background-color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 5px 15px rgba(58, 134, 255, 0.1);
+}
+
+/* Состояние ошибки */
+.input-field.error {
+    border-color: #FF3B30;
+    background-color: #FFF0F0;
+}
+
+.input-field i {
     text-align: center;
-    line-height: 55px;
     color: #acacac;
-    font-size: 1.3rem;
-    flex: 0 0 55px;
+    font-size: 1.2rem;
 }
 
 .input-field input {
@@ -92,48 +118,104 @@ form.sign-up-form { z-index: 1; opacity: 0; }
     border: none;
     line-height: 1;
     font-weight: 500;
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: #333;
+    font-family: inherit;
     width: 100%;
-    font-family: var(--font-family);
-    padding-right: 40px;
+}
+
+/* Тултипы и Ошибки */
+.tooltip {
+    font-size: 11px;
+    color: #999;
+    margin-left: 15px;
+    margin-top: 4px;
+    display: block;
+}
+
+.field-error {
+    font-size: 11px;
+    color: #FF3B30;
+    margin-left: 15px;
+    margin-top: 4px;
+    display: block;
+    min-height: 14px; /* Чтобы не скакало */
 }
 
 .toggle-password {
-    position: absolute;
-    right: 15px;            /* Чуть ближе к краю */
-    top: 50%;               /* Центрируем по вертикали */
-    transform: translateY(-50%); /* Корректировка центрирования */
     cursor: pointer;
-    color: #6C757D;         /* Более темный цвет, чтобы было лучше видно */
-    font-size: 1.2rem;
-    z-index: 100;           /* Высокий z-index, чтобы ничего не перекрыло */
-    pointer-events: auto;   /* Гарантируем, что клик пройдет */
+    z-index: 10;
+    transition: color 0.2s;
 }
+.toggle-password:hover { color: var(--primary-color); }
 
-/* При наведении делаем чуть темнее */
-.toggle-password:hover {
-    color: var(--primary-color);
-}
-
+/* --- КНОПКИ --- */
 .btn-solid {
     width: 150px;
-    height: 49px;
+    height: 50px;
     border: none;
-    outline: none;
-    border-radius: 49px;
+    border-radius: 50px;
     cursor: pointer;
     background-color: var(--primary-color);
     color: #fff;
-    text-transform: uppercase;
     font-weight: 600;
     margin: 10px 0;
-    transition: 0.5s;
-    font-family: var(--font-family);
+    transition: 0.3s;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 8px 15px rgba(58, 134, 255, 0.2);
 }
 
-.btn-solid:hover { background-color: #2b6cb0; }
+.btn-solid:hover {
+    background-color: #2b6cb0;
+    transform: translateY(-2px);
+}
 
+.btn-outline {
+    width: 120px;
+    height: 50px;
+    border: 2px solid #ccc;
+    border-radius: 50px;
+    background: transparent;
+    color: #666;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-outline:hover {
+    border-color: var(--text-dark);
+    color: var(--text-dark);
+}
+
+.btn-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* --- МУЛЬТИ-ШАГОВАЯ АНИМАЦИЯ --- */
+.form-step {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    animation: fadeStep 0.4s ease;
+}
+
+.form-step.active {
+    display: flex;
+}
+
+@keyframes fadeStep {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* --- СЛАЙДЕР И ПАНЕЛИ --- */
 .panels-container {
     position: absolute;
     width: 100%;
@@ -151,27 +233,20 @@ form.sign-up-form { z-index: 1; opacity: 0; }
     justify-content: space-around;
     text-align: center;
     z-index: 6;
-    pointer-events: none; 
+    pointer-events: none; /* Пропускаем клики */
 }
 
-.left-panel {
-    padding: 3rem 17% 2rem 12%;
-    pointer-events: none;
-}
-
-.right-panel {
-    padding: 3rem 12% 2rem 17%;
-    pointer-events: none;
-}
+.left-panel { padding: 3rem 17% 2rem 12%; }
+.right-panel { padding: 3rem 12% 2rem 17%; }
 
 .panel .content {
     color: #fff;
     transition: 0.9s 0.6s ease-in-out;
-    pointer-events: auto; 
+    pointer-events: auto; /* Включаем клики */
 }
 
-.panel h3 { font-weight: 600; font-size: 1.5rem; margin-bottom: 15px; }
-.panel p { font-size: 0.95rem; padding: 0.7rem 0; }
+.panel h3 { font-weight: 600; line-height: 1; font-size: 1.5rem; margin-bottom: 10px; }
+.panel p { font-size: 0.95rem; padding: 0.7rem 0; margin-bottom: 10px; }
 
 .btn-transparent {
     margin: 0;
@@ -184,13 +259,12 @@ form.sign-up-form { z-index: 1; opacity: 0; }
     color: #fff;
     border-radius: 49px;
     cursor: pointer;
-    font-family: var(--font-family);
     text-transform: uppercase;
+    transition: 0.3s;
 }
+.btn-transparent:hover { background: rgba(255,255,255,0.2); }
 
-/* --- ЛОГИКА АНИМАЦИИ (ЗЕРКАЛЬНАЯ) --- */
-
-/* Шар по умолчанию СЛЕВА */
+/* --- АНИМАЦИЯ ШАРА --- */
 .container:before {
     content: "";
     position: absolute;
@@ -199,64 +273,36 @@ form.sign-up-form { z-index: 1; opacity: 0; }
     border-radius: 50%;
     background: linear-gradient(-45deg, var(--primary-color), #004ecc);
     top: -10%;
-    right: 45%; /* <--- ИЗМЕНЕНИЕ: Смещаем вправо, значит шар будет слева */
+    right: 48%;
     transform: translateY(-50%);
     z-index: 6;
     transition: 1.8s ease-in-out;
     pointer-events: none;
 }
 
-/* 
-   СОСТОЯНИЕ 1: ВХОД (По умолчанию) 
-   Шар слева. Форма справа.
-   Текст на шаре (Слева) должен быть виден.
-   Текст справа должен быть скрыт.
-*/
-
-.left-panel .content {
-    transform: translateX(0); /* Виден */
-}
-
-.right-panel .content {
-    transform: translateX(800px); /* Скрыт вправо */
-}
-
-/* 
-   СОСТОЯНИЕ 2: РЕГИСТРАЦИЯ (.sign-up-mode) 
-   Шар едет вправо. Форма едет влево.
-*/
-
+/* State: Sign Up Mode */
 .container.sign-up-mode:before {
-    transform: translate(100%, -50%); /* Шар едет вправо */
-    right: 55%; /* Коррекция позиции */
+    transform: translate(100%, -50%);
+    right: 52%;
 }
 
 .container.sign-up-mode .signin-signup {
-    left: 25%; /* <--- ИЗМЕНЕНИЕ: Формы уезжают влево */
+    left: 25%;
 }
 
-.container.sign-up-mode form.sign-in-form {
-    z-index: 1;
-    opacity: 0;
-}
+.container.sign-up-mode form.sign-in-form { z-index: 1; opacity: 0; pointer-events: none; }
+.container.sign-up-mode form.sign-up-form { z-index: 2; opacity: 1; pointer-events: auto; }
 
-.container.sign-up-mode form.sign-up-form {
-    z-index: 2;
-    opacity: 1;
-}
+/* Анимация текста */
+.right-panel .content { transform: translateX(800px); }
+.container.sign-up-mode .right-panel .content { transform: translateX(0); }
+.container.sign-up-mode .left-panel .content { transform: translateX(-800px); }
 
-/* Анимация текста при регистрации */
-.container.sign-up-mode .left-panel .content {
-    transform: translateX(-800px); /* Левый текст уезжает влево */
-}
-
-.container.sign-up-mode .right-panel .content {
-    transform: translateX(0); /* Правый текст выезжает и становится виден */
-}
-
+/* Ошибки общие */
 .error-msg {
-    color: var(--danger-color);
-    font-size: 14px;
-    margin-top: 5px;
+    color: #FF3B30;
+    margin-top: 10px;
+    font-size: 13px;
+    text-align: center;
     display: none;
 }
