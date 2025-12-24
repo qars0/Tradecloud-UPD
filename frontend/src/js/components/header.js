@@ -11,6 +11,7 @@ class HeaderComponent {
     render() {
         if (!this.container) return;
 
+        // --- ЛЕВАЯ ЧАСТЬ ---
         const leftSection = `
             <a href="/index.html" class="header__logo">
                 <i class='bx bx-cloud-alt'></i>
@@ -18,36 +19,48 @@ class HeaderComponent {
             </a>
         `;
 
+        // --- ЦЕНТРАЛЬНАЯ ЧАСТЬ ---
         const centerSection = `
             <div class="header__center">
-                <button class="btn-catalog" onclick="location.href='/catalog.html'">
-                    <i class='bx bx-menu'></i> Каталог
+                <button class="btn-catalog-header" onclick="location.href='/catalog.html'">
+                    <i class='bx bx-grid-alt'></i> Каталог
                 </button>
                 <div class="header__search">
                     <i class='bx bx-search'></i>
-                    <input type="text" placeholder="Поиск товаров..." id="global-search">
+                    <input type="text" placeholder="Найти товар, услугу..." id="global-search">
                 </div>
-                <a href="/chat.html" class="header__chat-btn" title="Чат">
-                    <i class='bx bx-message-rounded-dots'></i>
-                </a>
             </div>
         `;
 
+        // --- ПРАВАЯ ЧАСТЬ ---
         let rightSection = '';
 
         if (this.isLoggedIn) {
             rightSection = `
                 <div class="header__right">
+                    <a href="/chat.html" class="icon-btn" title="Сообщения">
+                        <i class='bx bx-message-rounded-dots'></i>
+                    </a>
+                    
                     <a href="/favorites.html" class="icon-btn" title="Избранное">
                         <i class='bx bx-heart'></i>
                     </a>
-                    <!-- Колокольчик удален -->
-                    <a href="/create-listing.html" class="btn-create">
-                        Разместить
+                    
+                    <a href="/notifications.html" class="icon-btn" title="Уведомления" id="notif-link">
+                        <i class='bx bx-bell'></i>
+                        <!-- Бейдж (если есть) -->
+                    </a>
+                    
+                    <a href="/create-listing.html" class="btn-create-header">
+                        <i class='bx bx-plus'></i> Разместить
                     </a>
                     
                     <div class="profile-dropdown">
-                        <img src="${this.user.avatar}" alt="Ava" class="profile-avatar">
+                        <div class="profile-trigger" onclick="location.href='/profile.html'">
+                            <img src="${this.user.avatar}" alt="Ava" class="profile-avatar">
+                            <i class='bx bx-chevron-down' style="color:#999"></i>
+                        </div>
+                        
                         <div class="dropdown-menu">
                             <a href="/profile.html" class="dropdown-item">
                                 <i class='bx bx-user'></i> Мой профиль
@@ -55,9 +68,14 @@ class HeaderComponent {
                             <a href="/profile.html?tab=listings" class="dropdown-item">
                                 <i class='bx bx-list-ul'></i> Мои объявления
                             </a>
+                            <a href="/profile.html?tab=settings" class="dropdown-item">
+                                <i class='bx bx-cog'></i> Настройки
+                            </a>
+                            
                             <div class="dropdown-divider"></div>
+                            
                             <a href="#" class="dropdown-item" id="logout-btn" style="color: var(--danger-color);">
-                                <i class='bx bx-log-out'></i> Выход
+                                <i class='bx bx-log-out' style="color: var(--danger-color);"></i> Выход
                             </a>
                         </div>
                     </div>
@@ -66,18 +84,17 @@ class HeaderComponent {
         } else {
             rightSection = `
                 <div class="header__right">
-                    <div class="header__auth-links">
-                        <a href="/login.html" class="auth-link">Вход</a>
-                        <span style="color: var(--gray-medium)">|</span>
-                        <a href="/login.html?mode=register" class="auth-link primary">Регистрация</a>
+                    <div class="auth-links">
+                        <a href="/login.html" class="link-login">Вход</a>
                     </div>
-                    <a href="/login.html" class="btn-create" style="background: var(--gray-dark);">
-                        Разместить
+                    <a href="/login.html?mode=register" class="btn-create-header" style="background: var(--text-dark);">
+                        Регистрация
                     </a>
                 </div>
             `;
         }
 
+        // СБОРКА
         this.container.innerHTML = `
             <header class="header">
                 <div class="header__content">
@@ -89,9 +106,11 @@ class HeaderComponent {
         `;
 
         this.attachEvents();
+        if (this.isLoggedIn) this.initNotifications();
     }
 
     attachEvents() {
+        // Логика выхода
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
@@ -105,6 +124,7 @@ class HeaderComponent {
             });
         }
 
+        // Поиск
         const searchInput = document.getElementById('global-search');
         if (searchInput) {
             searchInput.addEventListener('keypress', (e) => {
@@ -112,6 +132,39 @@ class HeaderComponent {
                     window.location.href = `/catalog.html?search=${encodeURIComponent(searchInput.value)}`;
                 }
             });
+        }
+    }
+
+    // Уведомления (оставляем, если ты решил их оставить, если нет - можно удалить)
+    async initNotifications() {
+        if (typeof io !== 'undefined') {
+            const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
+            
+            try {
+                const userRes = await fetch('/api/user/me');
+                if(userRes.ok) {
+                    const user = await userRes.json();
+                    socket.emit('login', user.id);
+                }
+            } catch(e) {}
+
+            socket.on('new_notification', (data) => {
+                this.updateBadge(1); // Просто показываем точку
+            });
+        }
+    }
+
+    updateBadge(count) {
+        const notifLink = document.getElementById('notif-link');
+        if (!notifLink) return;
+        let badge = notifLink.querySelector('.badge');
+        if (count > 0) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge';
+                notifLink.appendChild(badge);
+            }
+            badge.style.display = 'flex';
         }
     }
 }
