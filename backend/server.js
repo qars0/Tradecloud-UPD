@@ -7,6 +7,8 @@ const http = require('http'); // <--- 1
 const { Server } = require('socket.io'); // <--- 2
 require('dotenv').config();
 
+const notifService = require('./services/notificationService');
+
 const app = express();
 const server = http.createServer(app); // <--- 3. Создаем HTTP сервер
 const io = new Server(server, {        // <--- 4. Инициализируем Socket.io
@@ -49,10 +51,23 @@ app.use(session({
     }
 }));
 
+notifService.init(io); 
+
+// Запускаем проверку аукционов каждую минуту
+setInterval(() => {
+    notifService.checkAuctions();
+}, 60000); // 60 секунд
+
+
 // --- SOCKET.IO LOGIC ---
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
-
+    
+    // Подписка на личные уведомления
+    socket.on('login', (userId) => {
+        socket.join(`user_${userId}`);
+    })
+    
     // Вход в комнату чата
     socket.on('join_chat', (chatId) => {
         socket.join(chatId);
@@ -94,6 +109,7 @@ const favoriteRoutes = require('./routes/favorites');
 const chatRoutes = require('./routes/chats');
 const reviewRoutes = require('./routes/reviews');
 const adminRoutes = require('./routes/admin');
+const notifRoutes = require('./routes/notifications');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
@@ -102,6 +118,7 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notifRoutes);
 
 // Test Route
 app.get('/api/health', async (req, res) => {

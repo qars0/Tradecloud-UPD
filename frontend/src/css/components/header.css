@@ -323,3 +323,105 @@
 @media (max-width: 900px) {
     .header__center { display: none; } /* Скрываем поиск на мобильных для простоты */
 }
+
+/* Бейдж */
+.badge {
+    position: absolute;
+    top: -2px; right: -2px;
+    background: #FF3B30; color: white;
+    font-size: 10px; font-weight: 700;
+    min-width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid white;
+    z-index: 10;
+}
+
+/* Дропдаун уведомлений */
+.notif-dropdown {
+    position: relative;
+}
+
+.notif-menu {
+    position: absolute;
+    right: -80px; /* Центрируем относительно иконки */
+    top: 50px;
+    width: 320px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.5);
+    padding: 10px 0;
+    display: none;
+    flex-direction: column;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1100;
+    animation: slideDown 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.notif-menu.active {
+    display: flex;
+}
+
+.notif-header {
+    padding: 10px 20px;
+    font-weight: 700;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notif-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f9f9f9;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    gap: 15px;
+    align-items: start;
+    text-decoration: none;
+    color: var(--text-dark);
+}
+
+.notif-item:hover {
+    background: #F4F7FE;
+}
+
+.notif-item.unread {
+    background: #ebf3ff;
+}
+
+.notif-icon-box {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+}
+
+/* Цвета иконок */
+.icon-outbid { background: #FFEBEE; color: #F44336; } /* Красный - беда */
+.icon-win { background: #E8F5E9; color: #4CAF50; }    /* Зеленый - победа */
+.icon-bid_placed { background: #FFF3E0; color: #FF9800; } /* Оранжевый */
+.icon-system { background: #E3F2FD; color: #2196F3; }
+
+.notif-text h4 { font-size: 14px; margin-bottom: 3px; font-weight: 600; }
+.notif-text p { font-size: 12px; color: #666; line-height: 1.3; }
+.notif-time { font-size: 10px; color: #aaa; margin-top: 5px; }
+
+/* Анимация колокольчика */
+@keyframes ring {
+    0% { transform: rotate(0); }
+    10% { transform: rotate(15deg); }
+    30% { transform: rotate(-15deg); }
+    50% { transform: rotate(10deg); }
+    70% { transform: rotate(-10deg); }
+    100% { transform: rotate(0); }
+}
+
+.icon-btn.ringing i {
+    animation: ring 0.5s ease;
+    color: var(--primary-color);
+}

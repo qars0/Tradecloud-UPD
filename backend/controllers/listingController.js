@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 require('dotenv').config();
+const notifService = require('../services/notificationService');
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -293,13 +294,41 @@ exports.placeBid = async (req, res) => {
             throw new Error(`Минимальная ставка: ${minNextBid} ₽`);
         }
 
+        // Находим текущего лидера ПЕРЕД тем, как вставить новую ставку
+        const prevBidRes = await client.query(
+            'SELECT bidder_id, amount FROM bids WHERE listing_id = $1 ORDER BY amount DESC LIMIT 1', 
+            [listing_id]
+        );
+
         // 4. Записываем ставку
         await client.query(
             'INSERT INTO bids (listing_id, bidder_id, amount) VALUES ($1, $2, $3)',
             [listing_id, userId, bidAmount]
         );
 
-        // 5. Можно добавить уведомление предыдущему лидеру (тут пропустим для простоты)
+        // Уведомляем предыдущего лидера (если он был и это не я сам)
+        if (prevBidRes.rows.length > 0) {
+            const prevBidderId = prevBidRes.rows[0].bidder_id;
+            if (prevBidderId !== userId) {
+                await notifService.send(
+                    prevBidderId,
+                    'outbid',
+                    'Вашу ставку перебили!',
+                    `В аукционе "${listing.title}" новая ставка: ${bidAmount} ₽.`,
+                    `/listing.html?id=${listing_id}`
+                );
+            }
+        }
+        // Уведомляем владельца
+        if (listing.user_id !== userId) {
+            await notifService.send(
+                listing.user_id,
+                'bid_placed',
+                'Новая ставка',
+                `На ваш товар "${listing.title}" поставили ${bidAmount} ₽.`,
+                `/listing.html?id=${listing_id}`
+            );
+    }
 
         await client.query('COMMIT');
         res.json({ message: 'Ставка принята!', new_price: bidAmount });

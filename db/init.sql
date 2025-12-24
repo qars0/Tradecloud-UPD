@@ -1,21 +1,19 @@
 -- =============================================================================
--- БАЗА ДАННЫХ ПЛАТФОРМЫ ОБЪЯВЛЕНИЙ
+-- БАЗА ДАННЫХ ПЛАТФОРМЫ ОБЪЯВЛЕНИЙ (ПЕРЕРАБОТАННАЯ)
 -- =============================================================================
 
--- 1. СБРОС СУЩЕСТВУЮЩИХ ТАБЛИЦ (Очистка)
--- -----------------------------------------------------------------------------
-DROP TABLE IF EXISTS "session" CASCADE;
-DROP TABLE IF EXISTS reviews CASCADE;
-DROP TABLE IF EXISTS messages CASCADE;
-DROP TABLE IF EXISTS chats CASCADE;
-DROP TABLE IF EXISTS favorites CASCADE;
-DROP TABLE IF EXISTS listing_images CASCADE;
-DROP TABLE IF EXISTS bids CASCADE;
-DROP TABLE IF EXISTS reports CASCADE;
-DROP TABLE IF EXISTS listings CASCADE;
-DROP TABLE IF EXISTS categories CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
+BEGIN;
 
+-- 1. СБРОС И ТИПЫ ДАННЫХ
+-- -----------------------------------------------------------------------------
+DROP TABLE IF EXISTS notifications, reviews, messages, chats, reports, favorites, bids, listing_images, listings, categories, session, users CASCADE;
+DROP TYPE IF EXISTS listing_type, listing_status, report_reason, report_status, unit_type;
+
+CREATE TYPE listing_type AS ENUM ('sell', 'rent', 'service', 'auction');
+CREATE TYPE listing_status AS ENUM ('active', 'reserved', 'sold', 'archived');
+CREATE TYPE unit_type AS ENUM ('hour', 'day', 'piece', 'sqm');
+CREATE TYPE report_reason AS ENUM ('spam', 'fraud', 'forbidden', 'other');
+CREATE TYPE report_status AS ENUM ('pending', 'resolved', 'dismissed');
 
 -- 2. ПОЛЬЗОВАТЕЛИ И СЕССИИ
 -- -----------------------------------------------------------------------------
@@ -23,23 +21,21 @@ CREATE TABLE users (
     id            SERIAL PRIMARY KEY,
     username      VARCHAR(50) UNIQUE NOT NULL,
     full_name     VARCHAR(100),
-    email         VARCHAR(100) UNIQUE NOT NULL,
+    email         VARCHAR(150) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     phone         VARCHAR(20),
     avatar_url    VARCHAR(255),
-    rating        DECIMAL(3, 2) DEFAULT 0.00,
+    rating        DECIMAL(3, 2) DEFAULT 0.00 CHECK (rating >= 0 AND rating <= 5),
     is_admin      BOOLEAN DEFAULT FALSE,
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE "session" (
-    "sid"    VARCHAR NOT NULL PRIMARY KEY,
-    "sess"   JSON NOT NULL,
-    "expire" TIMESTAMP(6) NOT NULL
-) WITH (OIDS=FALSE);
-
-CREATE INDEX "IDX_session_expire" ON "session" ("expire");
-
+    sid    VARCHAR NOT NULL PRIMARY KEY,
+    sess   JSON NOT NULL,
+    expire TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX "IDX_session_expire" ON "session" (expire);
 
 -- 3. КАТЕГОРИИ И ОБЪЯВЛЕНИЯ
 -- -----------------------------------------------------------------------------
@@ -52,44 +48,47 @@ CREATE TABLE categories (
 
 CREATE TABLE listings (
     id                  SERIAL PRIMARY KEY,
-    user_id             INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    user_id             INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category_id         INTEGER REFERENCES categories(id) ON DELETE SET NULL,
     title               VARCHAR(255) NOT NULL,
     description         TEXT,
-    price               DECIMAL(10, 2) NOT NULL,
+    price               DECIMAL(12, 2) NOT NULL CHECK (price >= 0),
     
-    -- Типизация: sell (продажа), rent (аренда), service (услуга), auction (аукцион)
-    type                VARCHAR(50) DEFAULT 'sell',
-    status              VARCHAR(20) DEFAULT 'active', -- active, reserved, sold, archived
+    type                listing_type DEFAULT 'sell',
+    status              listing_status DEFAULT 'active',
 
     -- Параметры аренды/услуг
-    price_unit          VARCHAR(20) DEFAULT NULL,    -- hour, day, piece, sqm
+    price_unit          unit_type DEFAULT NULL,
     is_price_from       BOOLEAN DEFAULT FALSE,
 
     -- Параметры аукциона
-    auction_start_price DECIMAL(10, 2),
-    auction_step        DECIMAL(10, 2),
-    auction_end_date    TIMESTAMP,
+    auction_start_price DECIMAL(12, 2) CHECK (auction_start_price >= 0),
+    auction_step        DECIMAL(12, 2) CHECK (auction_step > 0),
+    auction_end_date    TIMESTAMPTZ,
+    winner_notified     BOOLEAN DEFAULT FALSE,
 
-    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at          TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT check_auction_dates CHECK (
+        (type = 'auction' AND auction_end_date IS NOT NULL) OR (type <> 'auction')
+    )
 );
 
 CREATE TABLE listing_images (
     id         SERIAL PRIMARY KEY,
-    listing_id INTEGER REFERENCES listings(id) ON DELETE CASCADE,
+    listing_id INTEGER NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     image_url  VARCHAR(255) NOT NULL,
     is_main    BOOLEAN DEFAULT FALSE
 );
 
-
--- 4. ВЗАИМОДЕЙСТВИЕ: СТАВКИ, ИЗБРАННОЕ, ЖАЛОБЫ
+-- 4. ВЗАИМОДЕЙСТВИЕ
 -- -----------------------------------------------------------------------------
 CREATE TABLE bids (
     id         SERIAL PRIMARY KEY,
-    listing_id INTEGER REFERENCES listings(id) ON DELETE CASCADE,
-    bidder_id  INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    amount     DECIMAL(10, 2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    listing_id INTEGER NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+    bidder_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount     DECIMAL(12, 2) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE favorites (
@@ -102,47 +101,68 @@ CREATE TABLE reports (
     id          SERIAL PRIMARY KEY,
     listing_id  INTEGER REFERENCES listings(id) ON DELETE CASCADE,
     reporter_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    reason      VARCHAR(50) NOT NULL, -- spam, fraud, forbidden, other
+    reason      report_reason NOT NULL,
     comment     TEXT,
-    status      VARCHAR(20) DEFAULT 'pending', -- pending, resolved, dismissed
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    status      report_status DEFAULT 'pending',
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- 5. КОММУНИКАЦИИ И ОТЗЫВЫ
+-- 5. КОММУНИКАЦИИ И УВЕДОМЛЕНИЯ
 -- -----------------------------------------------------------------------------
 CREATE TABLE chats (
     id         SERIAL PRIMARY KEY,
     listing_id INTEGER REFERENCES listings(id) ON DELETE SET NULL,
-    buyer_id   INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    seller_id  INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    buyer_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    seller_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_chat UNIQUE (listing_id, buyer_id, seller_id)
 );
 
 CREATE TABLE messages (
     id         SERIAL PRIMARY KEY,
-    chat_id    INTEGER REFERENCES chats(id) ON DELETE CASCADE,
-    sender_id  INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    chat_id    INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+    sender_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     content    TEXT NOT NULL,
     is_read    BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE reviews (
     id         SERIAL PRIMARY KEY,
-    target_id  INTEGER REFERENCES users(id) ON DELETE CASCADE, -- Получатель
-    author_id  INTEGER REFERENCES users(id) ON DELETE CASCADE, -- Автор
-    rating     INTEGER CHECK (rating >= 1 AND rating <= 5),
+    target_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    author_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating     INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment    TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT self_review_check CHECK (target_id <> author_id)
 );
 
+CREATE TABLE notifications (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type       VARCHAR(50) NOT NULL,
+    title      VARCHAR(255) NOT NULL,
+    message    TEXT,
+    link       VARCHAR(255),
+    is_read    BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
 
+-- Индексы для оптимизации поиска
+CREATE INDEX idx_listings_user ON listings(user_id);
+CREATE INDEX idx_listings_category ON listings(category_id);
+CREATE INDEX idx_messages_chat ON messages(chat_id);
+CREATE INDEX idx_bids_listing ON bids(listing_id);
+
+COMMIT;
 -- =============================================================================
 -- НАПОЛНЕНИЕ ТЕСТОВЫМИ ДАННЫМИ (SEEDING)
 -- =============================================================================
 
--- Категории
+BEGIN;
+
+-- 1. КАТЕГОРИИ
+-- -----------------------------------------------------------------------------
 INSERT INTO categories (name, slug, icon_class) VALUES
 ('Электроника',    'electronics', 'bx bx-laptop'),
 ('Одежда и обувь', 'clothing',    'bx bx-closet'),
@@ -151,41 +171,69 @@ INSERT INTO categories (name, slug, icon_class) VALUES
 ('Хобби и спорт',  'hobbies',     'bx bx-basketball'),
 ('Учеба и книги',  'books',       'bx bx-book');
 
--- Пользователи
+-- 2. ПОЛЬЗОВАТЕЛИ
+-- (Пароль везде одинаковый: 'password123' в хэше)
+-- -----------------------------------------------------------------------------
 INSERT INTO users (username, full_name, email, phone, password_hash, avatar_url, rating, is_admin) VALUES
 ('admin', 'Администратор', 'admin@admin.com', '+79990001122', '$2a$12$jufDd6CgR57Qg5LfZRP4BecfDvvI4DQEJgPEW6OLp.HJDOznvjzqu', 'https://randomuser.me/api/portraits/lego/1.jpg', 5.0, TRUE),
 ('alex_student', 'Алексей Петров', 'alex@test.com', '+79001112233', '$2a$12$jufDd6CgR57Qg5LfZRP4BecfDvvI4DQEJgPEW6OLp.HJDOznvjzqu', 'https://randomuser.me/api/portraits/men/32.jpg', 4.8, FALSE),
 ('maria_design', 'Мария Иванова', 'maria@test.com', '+79998887766', '$2a$12$jufDd6CgR57Qg5LfZRP4BecfDvvI4DQEJgPEW6OLp.HJDOznvjzqu', 'https://randomuser.me/api/portraits/women/44.jpg', 5.0, FALSE),
 ('teacher_john', 'Иван Сидоров', 'ivan@test.com', '+79005554433', '$2a$12$jufDd6CgR57Qg5LfZRP4BecfDvvI4DQEJgPEW6OLp.HJDOznvjzqu', 'https://randomuser.me/api/portraits/men/85.jpg', 4.5, FALSE);
 
--- Объявления и Изображения
--- 1. MacBook (Продажа)
+-- 3. ОБЪЯВЛЕНИЯ
+-- -----------------------------------------------------------------------------
+-- MacBook (Продажа)
 INSERT INTO listings (user_id, category_id, title, description, price, type, status) 
 VALUES (2, 1, 'MacBook Pro 14 M1 Pro', 'В идеальном состоянии, полный комплект. Использовался для учебы.', 120000, 'sell', 'active');
-INSERT INTO listing_images (listing_id, image_url, is_main) VALUES 
-(1, 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80', TRUE),
-(1, 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=800&q=80', FALSE);
 
--- 2. Репетитор (Услуга)
+-- Репетитор (Услуга)
 INSERT INTO listings (user_id, category_id, title, description, price, type, price_unit, is_price_from) 
-VALUES (3, 4, 'Репетитор по высшей математике', 'Помогу подготовиться к экзаменам, решить контрольные. Опыт 3 года.', 800, 'service', 'hour', TRUE);
-INSERT INTO listing_images (listing_id, image_url, is_main) VALUES 
-(2, 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80', TRUE);
+VALUES (3, 4, 'Репетитор по высшей математике', 'Помогу подготовиться к экзаменам, решить контрольные.', 800, 'service', 'hour', TRUE);
 
--- 3. PS5 (Аренда)
+-- PS5 (Аренда)
 INSERT INTO listings (user_id, category_id, title, description, price, type, price_unit) 
-VALUES (2, 1, 'Sony PlayStation 5 + 2 геймпада', 'Сдаю в аренду на выходные. Игры: FIFA 24, MK1, Spider-Man 2.', 1500, 'rent', 'day');
-INSERT INTO listing_images (listing_id, image_url, is_main) VALUES 
-(3, 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&w=800&q=80', TRUE);
+VALUES (2, 1, 'Sony PlayStation 5 + 2 геймпада', 'Сдаю в аренду на выходные. Игры в комплекте.', 1500, 'rent', 'day');
 
--- 4. Монета (Аукцион)
+-- Монета (Аукцион)
 INSERT INTO listings (user_id, category_id, title, description, price, type, auction_start_price, auction_step, auction_end_date) 
 VALUES (4, 5, 'Коллекционная монета 1 рубль 1898 года', 'Оригинал. Состояние на фото.', 5000, 'auction', 5000, 100, NOW() + INTERVAL '3 days');
-INSERT INTO listing_images (listing_id, image_url, is_main) VALUES 
-(4, 'https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?auto=format&fit=crop&w=800&q=80', TRUE);
 
--- 5. Книги (Продано)
+-- Книги (Продано)
 INSERT INTO listings (user_id, category_id, title, description, price, type, status) 
-VALUES (3, 6, 'Учебники English File B2', 'Учебник и рабочая тетрадь. Исписаны карандашом.', 1000, 'sell', 'sold');
+VALUES (3, 6, 'Учебники English File B2', 'Учебник и рабочая тетрадь.', 1000, 'sell', 'sold');
+
+-- 4. ИЗОБРАЖЕНИЯ
+-- -----------------------------------------------------------------------------
 INSERT INTO listing_images (listing_id, image_url, is_main) VALUES 
-(5, 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=800&q=80', TRUE);
+(1, 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800', TRUE),
+(1, 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800', FALSE),
+(2, 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800', TRUE),
+(3, 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800', TRUE),
+(4, 'https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?w=800', TRUE);
+
+-- 5. СТАВКИ (Для аукциона)
+-- -----------------------------------------------------------------------------
+INSERT INTO bids (listing_id, bidder_id, amount) VALUES 
+(4, 2, 5100),
+(4, 3, 5200);
+
+-- 6. ЧАТЫ И СООБЩЕНИЯ
+-- -----------------------------------------------------------------------------
+INSERT INTO chats (listing_id, buyer_id, seller_id) VALUES (1, 3, 2);
+
+INSERT INTO messages (chat_id, sender_id, content) VALUES 
+(1, 3, 'Здравствуйте! Макбук еще продается?'),
+(1, 2, 'Добрый день! Да, актуально. Состояние отличное.');
+
+-- 7. ОТЗЫВЫ
+-- -----------------------------------------------------------------------------
+INSERT INTO reviews (target_id, author_id, rating, comment) VALUES 
+(2, 3, 5, 'Отличный продавец, все честно и быстро!'),
+(4, 2, 4, 'Хороший преподаватель, доходчиво объясняет.');
+
+-- 8. УВЕДОМЛЕНИЯ
+-- -----------------------------------------------------------------------------
+INSERT INTO notifications (user_id, type, title, message) VALUES 
+(2, 'bid_placed', 'Новая ставка', 'На ваш аукцион по монете поступила новая ставка: 5200 руб.');
+
+COMMIT;

@@ -135,8 +135,42 @@ class HeaderComponent {
         }
     }
 
-    // Уведомления (оставляем, если ты решил их оставить, если нет - можно удалить)
+    // Уведомления
     async initNotifications() {
+        if (!this.isLoggedIn) return;
+
+        // 1. Загрузка счетчика
+        this.loadUnreadCount();
+
+        // 2. Обработчик клика по колокольчику
+        const btn = document.getElementById('notif-btn');
+        const menu = document.getElementById('notif-menu');
+        
+        if (btn && menu) {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                // Тоггл меню
+                if (menu.classList.contains('active')) {
+                    menu.classList.remove('active');
+                } else {
+                    // Закрываем другие меню
+                    document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
+                    
+                    menu.classList.add('active');
+                    await this.loadNotificationsList();
+                    this.markAsRead(); // Помечаем прочитанными
+                }
+            });
+
+            // Закрытие при клике вне
+            document.addEventListener('click', (e) => {
+                if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                    menu.classList.remove('active');
+                }
+            });
+        }
+
+        // 3. Сокеты
         if (typeof io !== 'undefined') {
             const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
             
@@ -149,23 +183,92 @@ class HeaderComponent {
             } catch(e) {}
 
             socket.on('new_notification', (data) => {
-                this.updateBadge(1); // Просто показываем точку
+                this.loadUnreadCount(); // Обновить цифру
+                
+                // Эффект звонка
+                const icon = document.querySelector('#notif-btn i');
+                if(icon) {
+                    icon.parentElement.classList.add('ringing');
+                    setTimeout(() => icon.parentElement.classList.remove('ringing'), 500);
+                }
+                
+                // Если меню открыто - добавить в список
+                const list = document.getElementById('notif-list');
+                if (document.getElementById('notif-menu').classList.contains('active')) {
+                    this.loadNotificationsList(); 
+                }
             });
         }
     }
 
-    updateBadge(count) {
-        const notifLink = document.getElementById('notif-link');
-        if (!notifLink) return;
-        let badge = notifLink.querySelector('.badge');
+    async loadUnreadCount() {
+        try {
+            const res = await fetch('/api/notifications/count');
+            const data = await res.json();
+            this.renderBadge(data.count);
+        } catch(e) {}
+    }
+
+    renderBadge(count) {
+        const btn = document.getElementById('notif-btn');
+        let badge = btn.querySelector('.badge');
         if (count > 0) {
             if (!badge) {
                 badge = document.createElement('span');
                 badge.className = 'badge';
-                notifLink.appendChild(badge);
+                btn.appendChild(badge);
             }
-            badge.style.display = 'flex';
+            badge.innerText = count > 99 ? '99+' : count;
+        } else {
+            if (badge) badge.remove();
         }
+    }
+
+    async loadNotificationsList() {
+        const container = document.getElementById('notif-list');
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:#999">Загрузка...</div>';
+        
+        try {
+            const res = await fetch('/api/notifications');
+            const list = await res.json();
+            
+            container.innerHTML = '';
+            
+            if (list.length === 0) {
+                container.innerHTML = '<div style="padding:20px; text-align:center; color:#999">Нет уведомлений</div>';
+                return;
+            }
+
+            list.forEach(item => {
+                let icon = 'bx-bell';
+                let styleClass = 'icon-system';
+                
+                if (item.type === 'outbid') { icon = 'bx-down-arrow-circle'; styleClass = 'icon-outbid'; }
+                if (item.type === 'win') { icon = 'bx-trophy'; styleClass = 'icon-win'; }
+                if (item.type === 'bid_placed') { icon = 'bx-gavel'; styleClass = 'icon-bid_placed'; }
+
+                const html = `
+                    <a href="${item.link || '#'}" class="notif-item ${item.is_read ? '' : 'unread'}">
+                        <div class="notif-icon-box ${styleClass}">
+                            <i class='bx ${icon}'></i>
+                        </div>
+                        <div class="notif-text">
+                            <h4>${item.title}</h4>
+                            <p>${item.message}</p>
+                            <div class="notif-time">${new Date(item.created_at).toLocaleString()}</div>
+                        </div>
+                    </a>
+                `;
+                container.innerHTML += html;
+            });
+        } catch(e) {
+            container.innerHTML = 'Ошибка';
+        }
+    }
+
+    async markAsRead() {
+        await fetch('/api/notifications/read', { method: 'POST' });
+        this.renderBadge(0);
     }
 }
 
