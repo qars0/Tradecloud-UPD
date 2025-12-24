@@ -10,11 +10,9 @@
 }
 
 /* Обложка профиля */
+/* Удаляем старую .profile-cover или делаем её прозрачной */
 .profile-cover {
-    height: 250px;
-    background: linear-gradient(45deg, #3A86FF, #8338EC);
-    position: relative;
-    overflow: hidden;
+    display: none; /* Убираем, чтобы видеть меш-градиент */
 }
 
 .profile-cover::after {
@@ -29,10 +27,9 @@
 /* Основной контейнер */
 .profile-container {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 40px auto 0; /* Убрали отрицательный отступ, добавили верхний */
     padding: 0 20px;
     position: relative;
-    margin-top: -80px; /* Наезд на обложку */
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 30px;
@@ -41,12 +38,14 @@
 }
 
 /* --- КАРТОЧКА ПОЛЬЗОВАТЕЛЯ (ЛЕВАЯ) --- */
+/* Делаем карточки стеклянными */
 .user-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     border-radius: 24px;
     padding: 30px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
     text-align: center;
     animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: sticky;
@@ -114,8 +113,8 @@
     display: flex;
     justify-content: space-around;
     padding: 20px 0;
-    border-top: 1px solid #f0f0f0;
-    border-bottom: 1px solid #f0f0f0;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
     margin-bottom: 20px;
 }
 
@@ -185,7 +184,7 @@
 
 /* --- КОНТЕНТ (ПРАВАЯ) --- */
 .content-section {
-    margin-top: 80px; /* Отступ чтобы выровнять с карточкой */
+    margin-top: 0; /* Обнулено согласно новым требованиям */
     animation: slideUp 0.6s ease-out 0.2s backwards;
 }
 
@@ -194,7 +193,7 @@
     display: flex;
     gap: 30px;
     margin-bottom: 30px;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
     padding-bottom: 10px;
 }
 
@@ -242,7 +241,9 @@
 
 /* Форма настроек */
 .settings-box {
-    background: white;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     padding: 30px;
     border-radius: 20px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.03);
@@ -273,11 +274,17 @@
     outline: none;
 }
 
+/* Карточки отзывов тоже стеклянные */
+.review-card {
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(10px);
+}
+
 /* Адаптив */
 @media (max-width: 900px) {
     .profile-container {
         grid-template-columns: 1fr;
-        margin-top: -50px;
+        margin-top: 20px;
     }
     
     .user-card {
