@@ -69,12 +69,13 @@
                     </div>
                 </div>
 
-                <!-- Блок Аукциона (Скрыт по умолчанию) -->
+                <!-- Блок Аукциона -->
                 <div id="auction-interface" class="auction-ui" style="display: none;">
-                    <div style="text-align:center; margin-bottom:10px; font-size:14px; font-weight:600; color:#D35400">
+                    <div style="text-align:center; margin-bottom:15px; font-size:14px; font-weight:600; color:#D35400">
                         <span class="live-badge"></span> До конца торгов:
                     </div>
                     
+                    <!-- Таймер -->
                     <div class="timer-display">
                         <div class="timer-part"><div class="time-val" id="t-days">0</div><div class="time-lbl">Дн</div></div>
                         <div class="timer-part"><div class="time-val" id="t-hours">00</div><div class="time-lbl">Час</div></div>
@@ -82,19 +83,37 @@
                         <div class="timer-part"><div class="time-val" id="t-sec">00</div><div class="time-lbl">Сек</div></div>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:10px; color:#555;">
-                        <span>Текущая ставка:</span>
-                        <span style="font-weight:700" id="current-bid">0 ₽</span>
+                    <!-- Статистика ставок (Новое) -->
+                    <div class="auction-stats-row">
+                        <div class="stat-col">
+                            <span>Текущая</span>
+                            <span id="current-bid">0 ₽</span>
+                        </div>
+                        <div class="stat-col">
+                            <span>Шаг</span>
+                            <span id="bid-step-val">0 ₽</span>
+                        </div>
+                        <div class="stat-col">
+                            <span>Мин. ставка</span>
+                            <span id="min-next-bid" style="color:var(--primary-color)">0 ₽</span>
+                        </div>
                     </div>
 
+                    <!-- Форма -->
                     <form id="bid-form" style="display:flex; gap:10px;">
-                        <input type="number" id="bid-input" placeholder="Сумма" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;" required>
-                        <button type="submit" class="btn-primary-action" style="padding:10px 20px;"><i class='bx bx-check'></i></button>
+                        <input type="number" id="bid-input" placeholder="Ваша ставка..." style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;" required>
+                        <button type="submit" class="btn-primary-action" style="padding:10px 20px;">
+                            <i class='bx bx-gavel'></i>
+                        </button>
                     </form>
-                    <div id="bid-msg" style="font-size:12px; margin-top:5px;"></div>
+                    <div id="bid-msg" style="font-size:12px; margin-top:5px; text-align:center;"></div>
                     
-                    <!-- История (свернутая) -->
-                    <div class="history-list" id="bid-history" style="margin-top:15px; max-height:100px; overflow-y:auto; font-size:12px;"></div>
+                    <!-- Блок победителя (появится в конце) -->
+                    <div id="winner-container"></div>
+
+                    <!-- История -->
+                    <div style="margin-top:15px; font-size:12px; font-weight:600; color:#777;">История ставок:</div>
+                    <div class="history-list" id="bid-history" style="margin-top:5px; max-height:150px; overflow-y:auto; font-size:13px;"></div>
                 </div>
 
                 <!-- Кнопки действий -->

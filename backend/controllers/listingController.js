@@ -230,18 +230,23 @@ exports.getListingById = async (req, res) => {
             [listingId]
         );
         listing.images = imagesRes.rows;
-        // 3. Получаем историю ставок (только для аукциона)
+        // 3. Получаем историю ставок
         if (listing.type === 'auction') {
             const historyRes = await pool.query(`
-                SELECT b.amount, b.created_at, u.username 
+                SELECT 
+                    b.amount, 
+                    b.created_at, 
+                    b.bidder_id, -- <--- ВАЖНО: Добавили ID
+                    u.username, 
+                    u.full_name 
                 FROM bids b
                 JOIN users u ON b.bidder_id = u.id
                 WHERE b.listing_id = $1
                 ORDER BY b.amount DESC
-                LIMIT 10
             `, [listingId]);
             listing.bid_history = historyRes.rows;
-            // Если ставок нет, текущая цена = начальной
+            
+            // Текущая цена
             listing.current_price = listing.current_max_bid || listing.auction_start_price;
         }
         res.json(listing);

@@ -342,3 +342,53 @@ body {
     .right-column { position: static; animation-delay: 0s; order: -1; /* Цена сверху */ }
     .main-image-frame { height: 350px; }
 }
+
+.auction-stats-row {
+    display: flex;
+    justify-content: space-between;
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    border: 1px solid #eee;
+}
+
+.stat-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-col span:first-child {
+    color: #999;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.stat-col span:last-child {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* Кнопка победителя */
+.winner-action-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: #2ecc71; /* Зеленый */
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    animation: popIn 0.5s ease;
+}
+
+.winner-action-btn:hover {
+    background: #27ae60;
+}

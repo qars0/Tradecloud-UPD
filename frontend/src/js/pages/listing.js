@@ -177,18 +177,30 @@ function renderStandardPrice(data) {
 }
 
 function setupAuction(data) {
-    document.getElementById('standard-actions').style.display = 'none'; // Скрываем обычные кнопки
+    document.getElementById('standard-actions').style.display = 'none';
     document.getElementById('auction-interface').style.display = 'block';
     
+    // Заголовки цены
     document.getElementById('price-label').innerText = 'Начальная цена';
-    document.getElementById('price-val').innerText = Math.floor(data.auction_start_price) + ' ₽';
+    document.getElementById('price-val').innerText = Math.floor(data.auction_start_price).toLocaleString() + ' ₽';
 
+    // Расчеты
     const currentPrice = data.current_max_bid || data.auction_start_price;
-    document.getElementById('current-bid').innerText = Math.floor(currentPrice) + ' ₽';
+    const step = data.auction_step;
+    // Если ставок еще нет, можно ставить стартовую цену. Если есть - то текущая + шаг.
+    const minNext = data.current_max_bid ? (currentPrice + step) : data.auction_start_price;
+
+    // Заполнение UI
+    document.getElementById('current-bid').innerText = Math.floor(currentPrice).toLocaleString() + ' ₽';
+    document.getElementById('bid-step-val').innerText = Math.floor(step).toLocaleString() + ' ₽';
+    document.getElementById('min-next-bid').innerText = Math.floor(minNext).toLocaleString() + ' ₽';
+    
+    // Предзаполняем инпут минимальной ставкой для удобства
+    document.getElementById('bid-input').value = minNext;
+    document.getElementById('bid-input').min = minNext;
 
     // Таймер
     const endDate = new Date(data.auction_end_date).getTime();
-    
     if (window.auctionInterval) clearInterval(window.auctionInterval);
 
     function updateTimer() {
@@ -200,7 +212,7 @@ function setupAuction(data) {
             finishAuction(data);
             return;
         }
-
+        // ... (код таймера days/hours/min/sec тот же) ...
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -218,45 +230,119 @@ function setupAuction(data) {
     // История
     renderBidHistory(data);
     
-    // Форма ставки
+    // Форма ставки (Владельцу блокируем)
     const form = document.getElementById('bid-form');
-    // ... (логика отправки ставки такая же как в прошлом ответе) ...
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const amount = document.getElementById('bid-input').value;
-        const msg = document.getElementById('bid-msg');
-        try {
-            const res = await fetch('/api/listings/bid', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ listing_id: data.id, amount: amount })
-            });
-            const result = await res.json();
-            if(res.ok) {
-                msg.innerText = '✅ Принято!';
-                msg.style.color = 'green';
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                msg.innerText = `❌ ${result.message}`;
-                msg.style.color = 'red';
-            }
-        } catch(e) { msg.innerText = 'Ошибка'; }
-    });
+    if (currentUser && currentUser.id === data.user_id) {
+        form.innerHTML = '<div style="width:100%; text-align:center; padding:10px; background:#f0f0f0; border-radius:10px; font-size:13px; color:#666">Вы организатор (ставки запрещены)</div>';
+    } else {
+        // ... (стандартная логика отправки ставки) ...
+        // Копируем с заменой, чтобы убрать старые слушатели
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('bid-input').value;
+            const msg = document.getElementById('bid-msg');
+            try {
+                const res = await fetch('/api/listings/bid', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ listing_id: data.id, amount: amount })
+                });
+                const result = await res.json();
+                if(res.ok) {
+                    msg.innerText = '✅ Ставка принята!';
+                    msg.style.color = 'green';
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    msg.innerText = `❌ ${result.message}`;
+                    msg.style.color = 'red';
+                }
+            } catch(e) { msg.innerText = 'Ошибка'; }
+        });
+    }
 }
 
+// Завершение аукциона
 function finishAuction(data) {
-    document.querySelector('.timer-display').innerHTML = '<div style="width:100%; background:#d4edda; color:#155724; padding:10px; border-radius:10px;">Аукцион завершен</div>';
-    document.getElementById('bid-form').style.display = 'none';
+    document.querySelector('.timer-display').innerHTML = '<div style="width:100%; background:#d4edda; color:#155724; padding:10px; border-radius:10px; font-weight:600; text-align:center">Аукцион завершен</div>';
+    document.querySelector('.live-badge').style.display = 'none';
+    
+    // Скрываем форму ставки
+    const form = document.getElementById('bid-form');
+    if(form) form.style.display = 'none';
+
+    // Определяем победителя
+    const container = document.getElementById('winner-container');
+    container.innerHTML = '';
+
+    if (data.bid_history && data.bid_history.length > 0) {
+        const winner = data.bid_history[0]; // Последняя ставка = победитель
+        
+        const winnerBox = document.createElement('div');
+        winnerBox.style.marginTop = '20px';
+        winnerBox.style.padding = '15px';
+        winnerBox.style.background = '#FFF3CD';
+        winnerBox.style.border = '1px solid #FFEEBA';
+        winnerBox.style.borderRadius = '15px';
+        winnerBox.style.textAlign = 'center';
+        
+        winnerBox.innerHTML = `
+            <div style="font-size: 13px; color: #856404; text-transform:uppercase; margin-bottom:5px;">Победитель</div>
+            <div style="font-size: 18px; font-weight: 800; color: #333;">${winner.full_name || winner.username}</div>
+            <div style="font-size: 24px; color: var(--primary-color); font-weight: 800; margin-top:5px;">${Math.floor(winner.amount).toLocaleString()} ₽</div>
+        `;
+        
+        container.appendChild(winnerBox);
+
+        // --- КНОПКА ДЛЯ ВЛАДЕЛЬЦА: НАПИСАТЬ ПОБЕДИТЕЛЮ ---
+        if (currentUser && currentUser.id === data.user_id) {
+            const contactBtn = document.createElement('button');
+            contactBtn.className = 'winner-action-btn';
+            contactBtn.innerHTML = `<i class='bx bx-message-square-dots'></i> Написать победителю`;
+            
+            contactBtn.onclick = async () => {
+                // Создаем чат с победителем
+                try {
+                    const res = await fetch('/api/chats', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ listing_id: data.id, seller_id: winner.bidder_id }) // seller_id в чате - это "собеседник"
+                    });
+                    const chat = await res.json();
+                    if(res.ok || chat.id) window.location.href = `/chat.html?chat_id=${chat.id}`;
+                } catch(e) { console.error(e); }
+            };
+            
+            container.appendChild(contactBtn);
+        }
+
+    } else {
+        container.innerHTML = '<div style="text-align:center; padding:15px; color:#777; background:#f8f9fa; border-radius:10px; margin-top:10px;">Ставок не было. Аукцион завершен без победителя.</div>';
+    }
 }
 
+// Рендер истории (просто делаем красивее)
 function renderBidHistory(data) {
     const list = document.getElementById('bid-history');
     list.innerHTML = '';
     if(data.bid_history?.length) {
         data.bid_history.forEach(bid => {
-            list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee;"><span>${bid.username}</span><b>${Math.floor(bid.amount)} ₽</b></div>`;
+            const date = new Date(bid.created_at);
+            const timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            
+            list.innerHTML += `
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f0f0f0;">
+                    <div>
+                        <div style="font-weight:600; color:#333">${bid.full_name || bid.username}</div>
+                        <div style="font-size:11px; color:#999">${timeStr}</div>
+                    </div>
+                    <div style="font-weight:700; color:var(--primary-color)">${Math.floor(bid.amount).toLocaleString()} ₽</div>
+                </div>
+            `;
         });
-    } else { list.innerHTML = '<div style="text-align:center; color:#ccc;">Ставок нет</div>'; }
+    } else { list.innerHTML = '<div style="text-align:center; color:#ccc; margin-top:10px;">Ставок пока нет</div>'; }
 }
 
 // --- ДЕЙСТВИЯ ---

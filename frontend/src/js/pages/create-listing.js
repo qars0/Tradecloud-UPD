@@ -162,8 +162,6 @@ function setupFormSubmit() {
     });
 }
 
-// ... существующий код ...
-
 // Функция вызывается при загрузке страницы и при смене радио-кнопок
 function togglePriceFields() {
     const type = document.querySelector('input[name="type"]:checked').value;
