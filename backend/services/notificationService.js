@@ -18,14 +18,14 @@ exports.init = (io) => {
 
 exports.send = async (userId, type, title, message, link) => {
     try {
-        // 1. Сохраняем в БД
+        // Сохраняем в БД
         const result = await pool.query(
             'INSERT INTO notifications (user_id, type, title, message, link) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [userId, type, title, message, link]
         );
         const notif = result.rows[0];
 
-        // 2. Отправляем через Socket.io (если юзер онлайн)
+        // Отправляем через Socket.io (если юзер онлайн)
         if (socketIo) {
             // Отправляем в комнату user_ID
             socketIo.to(`user_${userId}`).emit('new_notification', notif);
@@ -37,7 +37,7 @@ exports.send = async (userId, type, title, message, link) => {
     }
 };
 
-// Функция проверки завершенных аукционов (Cron Job)
+// Функция проверки завершенных аукционов
 exports.checkAuctions = async () => {
     try {
         // Ищем аукционы, которые кончились, но победитель еще не уведомлен

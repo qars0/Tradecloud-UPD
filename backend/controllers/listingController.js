@@ -275,7 +275,7 @@ exports.placeBid = async (req, res) => {
         const userId = req.session.user.id;
         const bidAmount = parseFloat(amount);
 
-        // 1. Блокируем строку объявления для проверки (чтобы избежать гонки ставок)
+        // Блокируем строку объявления для проверки
         const listingRes = await client.query('SELECT * FROM listings WHERE id = $1 FOR UPDATE', [listing_id]);
         
         if (listingRes.rows.length === 0) throw new Error('Объявление не найдено');
@@ -285,12 +285,12 @@ exports.placeBid = async (req, res) => {
         if (listing.user_id === userId) throw new Error('Нельзя ставить на свой лот');
         if (new Date(listing.auction_end_date) < new Date()) throw new Error('Аукцион завершен');
 
-        // 2. Получаем текущую макс ставку
+        // Получаем текущую макс ставку
         const maxBidRes = await client.query('SELECT MAX(amount) as max_bid FROM bids WHERE listing_id = $1', [listing_id]);
         const currentMax = parseFloat(maxBidRes.rows[0].max_bid) || parseFloat(listing.auction_start_price);
 
-        // 3. Валидация
-        // Ставка должна быть больше текущей МИНИМУМ на шаг (если ставок нет — то >= стартовой)
+        // Валидация
+        // Ставка должна быть больше текущей МИНИМУМ на шаг (если ставок нет, то >= стартовой)
         const minNextBid = (maxBidRes.rows[0].max_bid) 
             ? currentMax + parseFloat(listing.auction_step) 
             : parseFloat(listing.auction_start_price);
@@ -305,13 +305,13 @@ exports.placeBid = async (req, res) => {
             [listing_id]
         );
 
-        // 4. Записываем ставку
+        // Записываем ставку
         await client.query(
             'INSERT INTO bids (listing_id, bidder_id, amount) VALUES ($1, $2, $3)',
             [listing_id, userId, bidAmount]
         );
 
-        // Уведомляем предыдущего лидера (если он был и это не я сам)
+        // Уведомляем предыдущего лидера
         if (prevBidRes.rows.length > 0) {
             const prevBidderId = prevBidRes.rows[0].bidder_id;
             if (prevBidderId !== userId) {

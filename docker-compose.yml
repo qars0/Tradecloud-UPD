@@ -13,7 +13,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5435:5432" # Внешний порт 5435, чтобы не конфликтовал, если у тебя стоит локальный Postgres
+      - "5435:5432"
     networks:
       - tradecloud-network
 

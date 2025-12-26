@@ -1,15 +1,22 @@
 class HeaderComponent {
     constructor() {
+        // Находим контейнер, куда будет вставлен HTML хедера
         this.container = document.getElementById('header-container');
+        // Проверяем статус входа из локального хранилища браузера
         this.isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
+        // Получаем данные пользователя (имя, аватар и т.д.)
         this.user = JSON.parse(localStorage.getItem('user')) || null;
+        // Переменная для хранения экземпляра Socket.io
         this.socket = null;
     }
 
+    /**
+     * Основной метод отрисовки компонента
+     */
     async render() {
         if (!this.container) return;
 
-        // Рендерим базу хедера (структура из прошлого шага)
+        // Вставляем HTML-структуру хедера
         this.container.innerHTML = `
             <header class="header">
                 <div class="header__content">
@@ -35,19 +42,24 @@ class HeaderComponent {
             </header>
         `;
 
+        // Навешиваем обработчики событий (клики, ввод текста)
         this.attachEvents();
+        
+        // Если пользователь авторизован, запускаем сокеты и счетчик уведомлений
         if (this.isLoggedIn) {
             this.initSocket();
             this.loadUnreadCount();
         }
     }
 
+    /**
+     * Возвращает HTML для авторизованного пользователя (сообщения, колокольчик, профиль)
+     */
     getPrivateNav() {
         return `
             <a href="/chat.html" class="icon-btn" title="Сообщения"><i class='bx bx-message-rounded-dots'></i></a>
             <a href="/favorites.html" class="icon-btn" title="Избранное"><i class='bx bx-heart'></i></a>
             
-            <!-- КОЛОКОЛЬЧИК -->
             <div class="notif-dropdown">
                 <div class="icon-btn" id="notif-btn" style="cursor:pointer">
                     <i class='bx bx-bell'></i>
@@ -79,6 +91,9 @@ class HeaderComponent {
         `;
     }
 
+    /**
+     * Возвращает HTML для гостя (кнопки Вход и Регистрация)
+     */
     getPublicNav() {
         return `
             <div class="auth-links">
@@ -88,8 +103,11 @@ class HeaderComponent {
         `;
     }
 
+    /**
+     * Назначение обработчиков кликов и ввода
+     */
     attachEvents() {
-        // Выход
+        // Логика кнопки "Выход"
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
             logoutBtn.onclick = (e) => {
@@ -101,7 +119,7 @@ class HeaderComponent {
             };
         }
 
-        // Поиск
+        // Поиск по нажатию на Enter
         const searchInput = document.getElementById('global-search');
         if (searchInput) {
             searchInput.onkeypress = (e) => {
@@ -109,21 +127,20 @@ class HeaderComponent {
             };
         }
 
-        // --- ЛОГИКА ОТКРЫТИЯ УВЕДОМЛЕНИЙ ---
+        // Открытие/закрытие уведомлений
         const notifBtn = document.getElementById('notif-btn');
         const notifMenu = document.getElementById('notif-menu');
         
         if (notifBtn && notifMenu) {
             notifBtn.onclick = (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Чтобы клик не дошел до document
                 const isActive = notifMenu.classList.contains('active');
                 
-                // Закрываем всё остальное
-                this.closeAllMenus();
+                this.closeAllMenus(); // Закрываем другие открытые меню
 
                 if (!isActive) {
                     notifMenu.classList.add('active');
-                    this.loadNotifications();
+                    this.loadNotifications(); // Подгружаем список при открытии
                 }
             };
 
@@ -133,13 +150,13 @@ class HeaderComponent {
                 markAllBtn.onclick = async (e) => {
                     e.stopPropagation();
                     await fetch('/api/notifications/read', { method: 'POST' });
-                    this.loadUnreadCount();
-                    this.loadNotifications();
+                    this.loadUnreadCount(); // Обнуляем счетчик
+                    this.loadNotifications(); // Обновляем список (убираем выделение unread)
                 };
             }
         }
 
-        // Клик вне меню закрывает его
+        // Клик в любом месте документа закрывает выпадающие меню
         document.addEventListener('click', () => this.closeAllMenus());
     }
 
@@ -148,27 +165,33 @@ class HeaderComponent {
         if (notifMenu) notifMenu.classList.remove('active');
     }
 
-    // --- SOCKETS ---
+    /**
+     * Инициализация WebSockets для получения уведомлений в реальном времени
+     */
     async initSocket() {
-        if (typeof io === 'undefined') return;
+        if (typeof io === 'undefined') return; // Если библиотека socket.io не загружена
 
         this.socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
 
-        // Узнаем свой ID и логинимся в комнату
         try {
             const res = await fetch('/api/user/me');
             const data = await res.json();
             if (data.id) {
+                // Привязываем сокет-соединение к ID пользователя на бэкенде
                 this.socket.emit('login', data.id);
             }
         } catch (e) {}
 
+        // Слушаем событие нового уведомления
         this.socket.on('new_notification', (notif) => {
-            this.playNotifAnimation();
-            this.loadUnreadCount();
+            this.playNotifAnimation(); // Визуальный эффект
+            this.loadUnreadCount();    // Обновляем число на бейджике
         });
     }
 
+    /**
+     * Анимация "тряски" колокольчика
+     */
     playNotifAnimation() {
         const btn = document.getElementById('notif-btn');
         if (btn) {
@@ -177,6 +200,9 @@ class HeaderComponent {
         }
     }
 
+    /**
+     * Запрос на бэкенд для получения количества непрочитанных уведомлений
+     */
     async loadUnreadCount() {
         try {
             const res = await fetch('/api/notifications/count');
@@ -185,6 +211,9 @@ class HeaderComponent {
         } catch (e) {}
     }
 
+    /**
+     * Отрисовка красного кружка (бейджика) с числом над колокольчиком
+     */
     renderBadge(count) {
         const btn = document.getElementById('notif-btn');
         if (!btn) return;
@@ -202,8 +231,12 @@ class HeaderComponent {
         }
     }
 
+    /**
+     * Загрузка списка уведомлений и их генерация в HTML
+     */
     async loadNotifications() {
         const list = document.getElementById('notif-list-content');
+        // Показываем спиннер загрузки
         list.innerHTML = '<div style="padding:20px; text-align:center;"><i class="bx bx-loader-alt bx-spin"></i></div>';
 
         try {
@@ -215,12 +248,13 @@ class HeaderComponent {
                 return;
             }
 
+            // Маппинг иконок и цветов в зависимости от типа уведомления
             list.innerHTML = data.map(n => {
                 const iconMap = {
-                    'outbid': 'bx-down-arrow-circle',
-                    'win': 'bx-trophy',
-                    'bid_placed': 'bx-gavel',
-                    'message': 'bx-message-dots'
+                    'outbid': 'bx-down-arrow-circle', // Ставку перебили
+                    'win': 'bx-trophy',               // Победа в аукционе
+                    'bid_placed': 'bx-gavel',         // Ставка принята
+                    'message': 'bx-message-dots'      // Новое сообщение
                 };
                 const classMap = {
                     'outbid': 'icon-outbid',
@@ -248,6 +282,7 @@ class HeaderComponent {
     }
 }
 
+// Запуск при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     const header = new HeaderComponent();
     header.render();

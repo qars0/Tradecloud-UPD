@@ -59,7 +59,7 @@ setInterval(() => {
 }, 60000); // 60 секунд
 
 
-// --- SOCKET.IO LOGIC ---
+// SOCKET.IO LOGIC 
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
     
@@ -79,17 +79,17 @@ io.on('connection', (socket) => {
         const { chatId, senderId, content } = data;
 
         try {
-            // 1. Сохраняем сообщение в базу
+            // Сохраняем сообщение в базу
             const msgResult = await pool.query(
                 'INSERT INTO messages (chat_id, sender_id, content) VALUES ($1, $2, $3) RETURNING *',
                 [chatId, senderId, content]
             );
             const savedMsg = msgResult.rows[0];
 
-            // 2. Отправляем сообщение в комнату чата (для реалтайм обновления окна чата)
+            // Отправляем сообщение в комнату чата (для реалтайм обновления окна чата)
             io.to(chatId).emit('receive_message', savedMsg);
 
-            // 3. УВЕДОМЛЕНИЕ: Находим, кому отправить уведомление
+            // Находим, кому отправить уведомление
             const chatRes = await pool.query(
                 'SELECT buyer_id, seller_id FROM chats WHERE id = $1',
                 [chatId]
