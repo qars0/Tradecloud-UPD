@@ -18,6 +18,8 @@ const io = new Server(server, {        // <--- 4. Инициализируем S
     }
 });
 
+app.set('io', io); 
+
 const PORT = process.env.PORT || 3000;
 
 // DB Setup
@@ -67,6 +69,11 @@ io.on('connection', (socket) => {
     socket.on('login', (userId) => {
         socket.join(`user_${userId}`);
     })
+
+    socket.on('join_listing', (listingId) => {
+        socket.join(`listing_${listingId}`);
+        console.log(`Socket ${socket.id} watching listing ${listingId}`);
+    });
     
     // Вход в комнату чата
     socket.on('join_chat', (chatId) => {

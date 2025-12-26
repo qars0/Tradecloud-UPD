@@ -1,3 +1,5 @@
+const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
+
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const listingId = params.get('id');
@@ -27,6 +29,14 @@ async function loadListingDetails(id) {
         
         const data = await res.json();
         currentListing = data;
+
+        // ПОДПИСКА НА ОБНОВЛЕНИЯ
+        socket.emit('join_listing', id);
+
+        // СЛУШАТЕЛЬ ОБНОВЛЕНИЙ
+        socket.on('auction_update', (data) => {
+            updateAuctionUI(data);
+        });
 
         // Конвертация
         data.price = parseFloat(data.price);
@@ -254,7 +264,7 @@ function setupAuction(data) {
                 if(res.ok) {
                     msg.innerText = '✅ Ставка принята!';
                     msg.style.color = 'green';
-                    setTimeout(() => location.reload(), 1000);
+                    //setTimeout(() => location.reload(), 1000);
                 } else {
                     msg.innerText = `❌ ${result.message}`;
                     msg.style.color = 'red';
@@ -443,3 +453,61 @@ document.getElementById('report-form').addEventListener('submit', async (e) => {
     closeReportModal();
     alert('Жалоба отправлена');
 });
+
+function updateAuctionUI(data) {
+    // 1. Обновляем текущую цену с анимацией
+    const priceEls = [document.getElementById('current-bid')];//document.getElementById('price-val')
+    
+    priceEls.forEach(el => {
+        if(el) {
+            el.innerText = Math.floor(data.new_price).toLocaleString() + ' ₽';
+            // Сброс и запуск анимации
+            el.classList.remove('price-updated');
+            void el.offsetWidth; // Триггер рефлоу
+            el.classList.add('price-updated');
+        }
+    });
+
+    // 2. Обновляем минимальную следующую ставку
+    const minNextEl = document.getElementById('min-next-bid');
+    if (minNextEl) minNextEl.innerText = Math.floor(data.next_min_bid).toLocaleString() + ' ₽';
+
+    // 3. Обновляем инпут (если это не владелец)
+    const input = document.getElementById('bid-input');
+    if (input) {
+        input.min = data.next_min_bid;
+        input.placeholder = `Мин: ${data.next_min_bid}`;
+        // Если поле пустое или значение меньше минимума - подставляем новое
+        if (!input.value || parseFloat(input.value) < data.next_min_bid) {
+            input.value = data.next_min_bid;
+        }
+    }
+
+    // 4. Добавляем запись в историю
+    const list = document.getElementById('bid-history');
+    if (list) {
+        // Убираем надпись "ставок нет", если она была
+        if (list.innerText.includes('Ставок пока нет')) list.innerHTML = '';
+
+        const date = new Date(data.bid_time);
+        const timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+        const newItem = document.createElement('div');
+        newItem.className = 'history-item new'; // Класс для анимации
+        newItem.style.display = 'flex';
+        newItem.style.justifyContent = 'space-between';
+        newItem.style.padding = '8px 0';
+        newItem.style.borderBottom = '1px solid #f0f0f0';
+        
+        newItem.innerHTML = `
+            <div>
+                <div style="font-weight:600; color:#333">${data.bidder_name}</div>
+                <div style="font-size:11px; color:#999">${timeStr}</div>
+            </div>
+            <div style="font-weight:700; color:var(--primary-color)">${Math.floor(data.new_price).toLocaleString()} ₽</div>
+        `;
+
+        // Вставляем в начало списка
+        list.insertBefore(newItem, list.firstChild);
+    }
+}

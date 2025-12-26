@@ -117,24 +117,48 @@ async function loadReviews(userId) {
     } catch(e) { console.error(e); }
 }
 
+// --- ОБЪЯВЛЕНИЯ ---
 async function loadListings(userId) {
     const container = document.getElementById('listings-grid');
+    // Если контейнера нет (например, старая верстка), ищем по старому ID
+    const targetContainer = container || document.getElementById('listings-container');
+    
+    if (targetContainer) targetContainer.innerHTML = '<div class="empty-state">Загрузка...</div>';
+
     try {
         const res = await fetch(`/api/listings?user_id=${userId}`);
-        const listings = await res.json();
-        container.innerHTML = '';
+        const result = await res.json();
+
+        // Если пришел объект с полем data, берем его. Если массив - берем массив.
+        const listings = result.data || result || []; 
+
+        if (targetContainer) targetContainer.innerHTML = '';
+        
+        // Обновляем счетчик
+        const statCount = document.getElementById('stat-listings');
+        if (statCount) statCount.innerText = listings.length;
+
         if(listings.length === 0) {
-            container.innerHTML = '<div class="empty-state">Нет активных объявлений</div>';
+            if (targetContainer) targetContainer.innerHTML = '<div class="empty-state">Нет активных объявлений</div>';
             return;
         }
-        document.getElementById('stat-listings').innerText = listings.length;
+
+        // Считаем проданные для статистики
         const soldCount = listings.filter(i => i.status === 'sold').length;
-        document.getElementById('stat-sales').innerText = soldCount;
+        const statSales = document.getElementById('stat-sales');
+        if (statSales) statSales.innerText = soldCount;
 
         listings.forEach(item => {
-            container.innerHTML += renderCard(item);
+            // Используем renderCard из card-renderer.js
+            if (targetContainer && typeof renderCard === 'function') {
+                targetContainer.innerHTML += renderCard(item);
+            }
         });
-    } catch(e) { console.error(e); }
+        
+    } catch(e) { 
+        console.error(e);
+        if (targetContainer) targetContainer.innerHTML = 'Ошибка загрузки'; 
+    }
 }
 
 function setupTabs() {

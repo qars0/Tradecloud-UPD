@@ -306,10 +306,11 @@ exports.placeBid = async (req, res) => {
         );
 
         // Записываем ставку
-        await client.query(
-            'INSERT INTO bids (listing_id, bidder_id, amount) VALUES ($1, $2, $3)',
+        const bidResult = await client.query(
+            'INSERT INTO bids (listing_id, bidder_id, amount) VALUES ($1, $2, $3) RETURNING created_at',
             [listing_id, userId, bidAmount]
         );
+        const bidTime = bidResult.rows[0].created_at;
 
         // Уведомляем предыдущего лидера
         if (prevBidRes.rows.length > 0) {
@@ -333,7 +334,23 @@ exports.placeBid = async (req, res) => {
                 `На ваш товар "${listing.title}" поставили ${bidAmount} ₽.`,
                 `/listing.html?id=${listing_id}`
             );
-    }
+        }
+        // --- SOCKET.IO ОБНОВЛЕНИЕ ---
+        const io = req.app.get('io');
+        // Получаем имя текущего ставившего для истории
+        const userRes = await client.query('SELECT username, full_name FROM users WHERE id = $1', [userId]);
+        const bidderName = userRes.rows[0].full_name || userRes.rows[0].username;
+
+        // Данные для отправки всем в комнате
+        const updateData = {
+            new_price: bidAmount,
+            next_min_bid: bidAmount + parseFloat(listing.auction_step),
+            bidder_name: bidderName,
+            bid_time: bidTime
+        };
+
+        // Отправляем событие в комнату этого товара
+        io.to(`listing_${listing_id}`).emit('auction_update', updateData);
 
         await client.query('COMMIT');
         res.json({ message: 'Ставка принята!', new_price: bidAmount });
